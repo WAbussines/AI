@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>jurek36AI Chatbot</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Jurek36AI ChatBot 2.0</title> <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
   <style>
@@ -233,8 +232,7 @@
   <div class="chat-container-wrapper">
     <div class="chat-container">
       <header class="chat-header">
-        <h1>jurek36AI Chatbot</h1>
-        </header>
+        <h1>Jurek36AI ChatBot 2.0</h1> </header>
       <main id="chat" class="chat-main">
         </main>
       <footer class="chat-footer">
@@ -248,7 +246,7 @@
   </div>
 
   <script>
-    // !!! === BARDZO WAŻNE OSTRZEŻENIE BEZPIECZEŃSTWA === !!!
+    // !!! === BARDZO WAŻNE OSTRZEŻENIA BEZPIECZEŃSTWA === !!!
     // PONIŻEJ MUSISZ WPROWADZIĆ SWÓJ KLUCZ API GOOGLE GEMINI.
     // UMIESZCZANIE KLUCZA API BEZPOŚREDNIO W KODZIE KLIENTA (FRONTENDU)
     // JEST BARDZO NIEBEZPIECZNE! KAZDY, KTO OTWORZY KONSOLĘ PRZEGLĄDARKĘ,
@@ -262,26 +260,20 @@
     const messageInput = document.getElementById('message');
     const sendBtn = document.getElementById('send');
 
-    // Removed canvas related variables and functions
-    // Usunięto zmienne i funkcje związane z canvasem
-
     let loadingMessageElement = null; // Reference to the loading indicator element
-    // Referencja do elementu wskaźnika ładowania
     let currentLanguage = 'pl'; // Default language
-    // Domyślny język
+
+    // *** ZMIENNA DO PRZECHOWYWANIA HISTORII ROZMOWY ***
+    let conversationHistory = [];
 
     // Marked.js configuration (optional but recommended for security and specific needs)
-    // Konfiguracja Marked.js (opcjonalne, ale polecane dla bezpieczeństwa i specyficznych potrzeb)
     marked.setOptions({
       breaks: true, // Render newlines as <br/>
       gfm: true,    // Enable GitHub Flavored Markdown
       // To add code syntax highlighting (coloring), uncomment the section below
       // and add the highlight.js CSS and JS links in the <head> section (see commented links).
-      // Aby dodać podświetlanie składni kodu (kolorowanie), odkomentuj poniższą sekcję
-      // i dodaj linki do highlight.js CSS i JS w sekcji <head> (patrz zakomentowane linki).
       // highlight: function(code, lang) {
       //   const hljs = require('highlight.js'); // In a browser environment, highlight.js is global
-      //   // W środowisku przeglądarki highlight.js jest globalne
       //   const language = hljs.getLanguage(lang) ? lang : 'plaintext';
       //   try {
       //     return hljs.highlight(code, { language }).value;
@@ -293,13 +285,12 @@
     });
 
     // Dictionary of translations for various UI elements and messages
-    // Słownik tłumaczeń dla różnych elementów UI i komunikatów
     const translations = {
       'pl': {
         systemMessage: 'Jesteś pomocnym asystentem, który mówi po polsku. Gdy odpowiadasz, możesz używać formatowania Markdown takiego jak **pogrubienie**, *kursywa*, `kod inline` lub bloki kodu:\n```javascript\nconsole.log("Witaj!");\n```\n. Twój język jest polski.',
         inputPlaceholder: 'Napisz wiadomość...',
         sendButtonText: 'Wyślij',
-        loadingText: 'jurek36AI pisze...',
+        loadingText: 'Jurek36AI 2.0 pisze...', // Zmieniono tekst ładowania
         errorGeneric: 'Wystąpił nieoczekiwany błąd komunikacji.',
         errorApi: 'Błąd API Gemini.',
         errorApiRequest: 'Błąd żądania (400). Upewnij się, że Twój klucz API i treść żądania są poprawne.',
@@ -307,16 +298,14 @@
         errorApiQuota: 'Przekroczono limit zapytań (429). Spróbuj ponownie później.',
         errorApiServer: (status) => `Błąd serwera Gemini (HTTP ${status}). Spróbuj ponownie później.`,
         errorNoReply: 'Nie otrzymano odpowiedzi tekstowej od bota Gemini.',
-        copyButtonText: 'Kopiuj', // Kept for potential future use, but not used
-        // Zachowane na wypadek przyszłego użycia, ale nieużywane
-        copiedButtonText: 'Skopiowano!' // Kept for potential future use, but not used
-        // Zachowane na wypadek przyszłego użycia, ale nieużywane
+        copyButtonText: 'Kopiuj',
+        copiedButtonText: 'Skopiowano!'
       },
       'en': {
         systemMessage: 'You are a helpful assistant who speaks English. When responding, you can use Markdown formatting like **bold**, *italics*, `inline code` or code blocks:\n```javascript\nconsole.log("Hello!");\n```\n. Your language is English.',
         inputPlaceholder: 'Write a message...',
         sendButtonText: 'Send',
-        loadingText: 'jurek36AI is typing...',
+        loadingText: 'Jurek36AI 2.0 is typing...', // Zmieniono tekst ładowania
         errorGeneric: 'An unexpected communication error occurred.',
         errorApi: 'Gemini API Error.',
         errorApiRequest: 'Bad request (400). Ensure your API key and request body are correct.',
@@ -324,22 +313,19 @@
         errorApiQuota: 'Quota exceeded (429). Try again later.',
         errorApiServer: (status) => `Gemini server error (HTTP ${status}). Please try again later.`,
         errorNoReply: 'No text reply received from Gemini bot.',
-        copyButtonText: 'Copy', // Kept for potential future use, but not used
-        copiedButtonText: 'Copied!' // Kept for potential future use, but not used
+        copyButtonText: 'Copy',
+        copiedButtonText: 'Copied!'
       }
     };
 
     // Function to apply language to UI elements
-    // Funkcja do stosowania języka do elementów UI
     function applyLanguageToUI() {
       const langData = translations[currentLanguage] || translations['en']; // Fallback to English
-      // Fallback na angielski
       messageInput.placeholder = langData.inputPlaceholder;
       sendBtn.innerText = langData.sendButtonText;
     }
 
     // Function to detect and set language based on user's IP (approximate)
-    // Funkcja do wykrywania i ustawiania języka na podstawie IP użytkownika (przybliżone)
     async function detectAndSetLanguage() {
       try {
         const response = await fetch('http://ip-api.com/json/?fields=countryCode');
@@ -361,8 +347,8 @@
       }
     }
 
+
     // Function to append messages to the chat window
-    // Funkcja do dodawania wiadomości do okna czatu
     function appendMessage(text, sender) {
       const langData = translations[currentLanguage] || translations['en'];
 
@@ -372,51 +358,29 @@
         : 'text-left';
 
       const bubble = document.createElement('div');
-      // Add Tailwind classes and custom 'message-bubble' class
-      // Dodajemy klasy Tailwind i niestandardową klasę 'message-bubble'
       bubble.className = (sender === 'user'
-        ? 'message-bubble user' // Use custom CSS classes
-        // Używamy niestandardowych klas CSS
+        ? 'message-bubble user'
         : 'message-bubble bot');
 
       if (sender === 'bot') {
-        // Parse Markdown to HTML using marked.js
-        // Parsuj Markdown do HTML używając marked.js
         let htmlContent = marked.parse(text);
-
-        // !!! Important for security: Sanitize HTML using DOMPurify !!!
-        // !!! Ważne dla bezpieczeństwa: Sanityzacja HTML za pomocą DOMPurify !!!
         htmlContent = DOMPurify.sanitize(htmlContent, {
           USE_PROFILES: { html: true }
         });
-
         // Bold the word "tak" (case-insensitive, whole word)
-        // Pogrubienie słowa "tak" (bez rozróżniania wielkości liter, całe słowo)
         htmlContent = htmlContent.replace(/\b(tak)\b/gi, '<strong>$1</strong>');
-
         bubble.innerHTML = htmlContent;
-
-        // Removed the code that adds copy buttons to code blocks
-        // Usunięto kod dodający przyciski kopiowania do bloków kodu
-
       } else {
         bubble.innerText = text; // User messages are plain text
-        // Wiadomości użytkownika to zwykły tekst
       }
 
-      wrapper.appendChild(bubble); // Add bubble to wrapper element
-      // Dodaj dymek do elementu opakowującego
-      chat.appendChild(wrapper); // Add wrapper element to chat container
-      // Dodaj element opakowujący do kontenera czatu
-
-      // Scroll to the bottom when a new message is added
-      // Przewiń do dołu, gdy dodana zostanie nowa wiadomość
-      chat.scrollTop = chat.scrollHeight;
+      wrapper.appendChild(bubble);
+      chat.appendChild(wrapper);
+      chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
       return bubble;
     }
 
     // Function to add a temporary loading indicator
-    // Funkcja do dodawania tymczasowego wskaźnika ładowania
     function appendLoadingIndicator() {
       const langData = translations[currentLanguage] || translations['en'];
       const wrapper = document.createElement('div');
@@ -433,7 +397,6 @@
     }
 
     // Function to remove the loading indicator
-    // Funkcja do usuwania wskaźnika ładowania
     function removeLoadingIndicator() {
       if (loadingMessageElement && loadingMessageElement.parentNode) {
         loadingMessageElement.parentNode.removeChild(loadingMessageElement);
@@ -442,24 +405,27 @@
     }
 
     // Function to handle sending messages to the Gemini API
-    // Funkcja do obsługi wysyłania wiadomości do API Gemini
     async function sendMessage(message) {
       if (!message.trim()) return;
 
-      appendMessage(message, 'user');
-      messageInput.value = '';
+      const langData = translations[currentLanguage] || translations['en'];
 
+      // Add user message to history before sending
+      conversationHistory.push({ role: 'user', parts: [{ text: message }] });
+
+      // Display the user message immediately
+      appendMessage(message, 'user');
+
+      // Clear input and disable UI
+      messageInput.value = '';
       sendBtn.disabled = true;
       messageInput.disabled = true;
 
+      // Add loading indicator
       appendLoadingIndicator();
 
-      const langData = translations[currentLanguage] || translations['en'];
-
       try {
-        // Using gemini-1.5-flash as requested
-        // Używamy gemini-1.5-flash zgodnie z żądaniem
-        const modelToUse = 'gemini-1.5-flash';
+        const modelToUse = 'gemini-1.5-flash'; // Using gemini-1.5-flash
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
@@ -467,11 +433,9 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: message
-              }]
-            }],
+            // Send the entire conversation history
+            contents: conversationHistory,
+            // System instruction is sent with every turn when managing history this way on frontend
             system_instruction: {
                 parts: [{
                     text: langData.systemMessage
@@ -499,26 +463,47 @@
                displayErrorMessage += ` (Kod statusu: ${res.status})`;
             }
           }
+          // Note: API errors are not added to conversationHistory
           throw new Error(displayErrorMessage);
         }
 
         const data = await res.json();
-        const reply = data.candidates && data.candidates[0] &&
-                      data.candidates[0].content && data.candidates[0].content.parts &&
-                      data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+        // Use optional chaining for safer access
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (!reply) {
-            throw new Error(langData.errorNoReply);
+            // Handle cases where the API responds OK but sends no text reply (e.g. block reasons)
+            removeLoadingIndicator();
+            console.warn("Gemini returned no text reply:", data);
+            // Append a "no reply" message to the display, but NOT to history
+            appendMessage(langData.errorNoReply, 'bot');
+            // We might choose to throw an error here instead, depending on desired behavior
+            // throw new Error(langData.errorNoReply);
+        } else {
+            // Add bot reply to history
+            conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
+
+            // Remove loading indicator
+            removeLoadingIndicator();
+
+            // Display the bot message
+            appendMessage(reply, 'bot');
         }
 
-        removeLoadingIndicator();
-        appendMessage(reply, 'bot');
 
       } catch (err) {
         removeLoadingIndicator();
         console.error('Wystąpił błąd komunikacji z Gemini API:', err);
+        // Display the error message
         appendMessage(`${langData.errorApi}: ${err.message || langData.errorGeneric}`, 'bot');
+        // Communication/API errors are not added to conversationHistory
+
+        // OPTIONAL: If an error occurs, you might want to remove the *last* user message
+        // from the history if the bot didn't successfully respond, so the next message
+        // doesn't re-send a turn that failed. This adds complexity. For this simple case,
+        // we'll leave the user message in history even if the bot failed.
       } finally {
+        // Re-enable UI
         sendBtn.disabled = false;
         messageInput.disabled = false;
         messageInput.focus();
@@ -526,7 +511,6 @@
     }
 
     // Event listeners
-    // Nasłuchiwacze zdarzeń
     sendBtn.addEventListener('click', () => sendMessage(messageInput.value));
     messageInput.addEventListener('keyup', (e) => {
       if (e.key === 'Enter') {
@@ -535,11 +519,9 @@
     });
 
     // Set focus on the input field after page load
-    // Ustaw fokus na polu wprowadzania po załadowaniu strony
     messageInput.focus();
 
     // Detect and set language after page load
-    // Wykryj i ustaw język po załadowaniu strony
     window.onload = detectAndSetLanguage;
   </script>
 </body>
