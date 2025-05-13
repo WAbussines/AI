@@ -424,10 +424,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
-  <audio id="send-sound" src="https://www.soundjay.com/buttons/button-1.mp3" preload="auto"></audio>
-  <audio id="receive-sound" src="https://www.soundjay.com/buttons/button-3.mp3" preload="auto"></audio>
-
-
   <script>
     // !!! === BARDZO WAŻNE OSTRZEŻENIA BEZPIECZEŃSTWA === !!!
     // PONIŻEJ MUSISZ WPROWADZIĆ SWÓJ KLUCZ API GOOGLE GEMINI.
@@ -446,9 +442,11 @@
     const imageInput = document.getElementById('image-input');
     const imagePreview = document.getElementById('image-preview');
     const attachButton = document.getElementById('attach-button');
-    const sendSound = document.getElementById('send-sound');
-    const receiveSound = document.getElementById('receive-sound');
     const creativityToggleBtn = document.getElementById('creativity-toggle-btn');
+
+    // Usunięto zmienne dla elementów audio
+    // const sendSound = document.getElementById('send-sound');
+    // const receiveSound = document.getElementById('receive-sound');
 
 
     let loadingMessageElement = null;
@@ -542,13 +540,12 @@
         }
     }
 
-    // NOWE: Funkcja do obsługi kliknięć przycisków kopiowania (delegacja zdarzeń)
+    // Funkcja do obsługi kliknięć przycisków kopiowania (delegacja zdarzeń)
     function addCopyButtonListeners(containerElement) {
         const langData = translations[currentLanguage] || translations['en'];
         containerElement.addEventListener('click', async (event) => {
-            const target = event.target.closest('.copy-button'); // Znajdź najbliższy przycisk kopiowania
+            const target = event.target.closest('.copy-button');
             if (target) {
-                // Znajdź blok kodu związany z tym przyciskiem
                 const codeContainer = target.closest('.code-container');
                 if (codeContainer) {
                     const codeElement = codeContainer.querySelector('pre code');
@@ -565,12 +562,21 @@
                             }, 2000);
                         } catch (err) {
                             console.error('Failed to copy code: ', err);
-                            // Opcjonalnie pokaż komunikat błędu użytkownikowi
                         }
                     }
                 }
             }
         });
+    }
+
+    // NOWE: Funkcja do wywoływania wibracji
+    function vibrateDevice(pattern) {
+        // Sprawdź, czy API wibracji jest dostępne
+        if (navigator.vibrate) {
+            navigator.vibrate(pattern);
+        } else {
+            console.warn("API wibracji nie jest wspierane w tej przeglądarce.");
+        }
     }
 
 
@@ -600,7 +606,7 @@
     function enhanceCodeBlock(preElement) {
         const langData = translations[currentLanguage] || translations['en'];
         const codeElement = preElement.querySelector('code');
-        if (!codeElement) return null; // Zwróć null, jeśli brak elementu code
+        if (!codeElement) return null;
 
         const codeText = codeElement.textContent;
         const lines = codeText.split('\n');
@@ -621,13 +627,12 @@
         const copyButton = document.createElement('button');
         copyButton.className = 'copy-button';
         copyButton.innerHTML = '<i class="fas fa-copy"></i>';
-        // aria-label będzie ustawiany przez delegację zdarzeń
 
         codeContainer.appendChild(lineNumbersDiv);
-        codeContainer.appendChild(preElement.cloneNode(true)); // Skopiuj oryginalny preElement
+        codeContainer.appendChild(preElement.cloneNode(true));
         codeContainer.appendChild(copyButton);
 
-        return codeContainer; // Zwróć nowy kontener
+        return codeContainer;
     }
 
 
@@ -647,25 +652,21 @@
 
       if (sender === 'bot') {
         let htmlContent = marked.parse(text);
-        // Sanityzacja działa na stringu
         htmlContent = DOMPurify.sanitize(htmlContent, {
           USE_PROFILES: { html: true }
         });
 
-        // Bold the word "tak" (case-insensitive, whole word)
         htmlContent = htmlContent.replace(/\b(tak)\b/gi, '<strong>$1</strong>');
 
-        // Utwórz tymczasowy element, aby pracować z DOM
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = htmlContent;
 
-        // Zbieraj elementy do zastąpienia
         const preElements = Array.from(tempDiv.querySelectorAll('pre'));
         const replacements = [];
 
         preElements.forEach(preElement => {
             const enhancedBlock = enhanceCodeBlock(preElement);
-            if (enhancedBlock && preElement.parentNode) { // Sprawdź czy enhanceCodeBlock zwróciło coś i czy oryginalny element ma rodzica
+            if (enhancedBlock && preElement.parentNode) {
                  replacements.push({
                      parent: preElement.parentNode,
                      oldChild: preElement,
@@ -677,10 +678,8 @@
             }
         });
 
-        // Wykonaj zastąpienia po zebraniu wszystkich informacji
         replacements.forEach(replacement => {
              try {
-                // Ponownie sprawdź relację rodzic-dziecko przed zastąpieniem
                 if (replacement.parent && replacement.parent.contains(replacement.oldChild)) {
                     replacement.parent.replaceChild(replacement.newChild, replacement.oldChild);
                 } else {
@@ -694,16 +693,12 @@
              }
         });
 
-
-        // Ustaw innerHTML dymka z zmodyfikowanego tymczasowego elementu
         bubble.innerHTML = tempDiv.innerHTML;
 
-        // Dodaj delegację zdarzeń dla przycisków kopiowania do dymka
         addCopyButtonListeners(bubble);
 
 
       } else {
-        // Wiadomość użytkownika
         if (isHtml) {
              bubble.innerHTML = text;
         } else {
@@ -715,7 +710,6 @@
       chat.appendChild(wrapper);
 
 
-      // Dodaj sekcję sugerowanych pytań po dymku bota
       if (sender === 'bot') {
           appendSuggestedQuestions(wrapper, text);
       }
@@ -851,15 +845,9 @@
         imagePreview.src = '#';
     }
 
-    // Funkcja do odtwarzania dźwięku
-    function playSound(audioElement) {
-        if (audioElement && audioElement.readyState >= 2) {
-            audioElement.currentTime = 0;
-            audioElement.play().catch(e => console.error("Error playing sound:", e));
-        } else {
-             console.warn("Sound not ready or element not found.");
-        }
-    }
+    // Usunięto funkcję playSound
+    // function playSound(audioElement) { ... }
+
 
     // Funkcja do konwersji pliku obrazu na base64
     function fileToBase64(file) {
@@ -933,7 +921,7 @@
       newChatBtn.disabled = true;
       attachButton.disabled = true;
       appendLoadingIndicator();
-      playSound(sendSound);
+      vibrateDevice([50]); // NOWE: Wibracja przy wysyłaniu
 
 
       try {
@@ -998,7 +986,7 @@
             conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
 
             appendMessage(reply, 'bot');
-            playSound(receiveSound);
+            vibrateDevice([100]); // NOWE: Wibracja przy odbieraniu
             saveHistory();
         }
 
@@ -1085,6 +1073,10 @@
         loadHistory();
         updateCreativityButtonState();
     };
+
+    // Dodaj nasłuchiwacz zdarzeń kliknięcia do elementu chat dla delegacji przycisków kopiowania
+    addCopyButtonListeners(chat);
+
   </script>
 </body>
 </html>
