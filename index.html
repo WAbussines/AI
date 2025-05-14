@@ -496,15 +496,6 @@
      }
 
 
-     /* Styl dla kontenerów reklamowych */
-     .ad-container {
-         width: 100%;
-         text-align: center; /* Wyśrodkowanie reklamy */
-         margin: 1rem 0; /* Odstęp od innych elementów */
-         /* Możesz dodać więcej stylów, np. wysokość minimalną, obramowanie */
-     }
-
-
      /* Media query for smaller screens */
      @media (max-width: 600px) {
          .sidebar {
@@ -526,7 +517,7 @@
         </button>
         <div class="chat-history-list" id="chat-history-list">
             </div>
-        </div>
+    </div>
 
     <div class="overlay" id="overlay"></div>
 
@@ -539,32 +530,29 @@
 
           <img src="https://i.postimg.cc/rFgBD37y/file-00000000eef061f4966205833b4b6822-removebg-preview.png" alt="Jurek36AI Chatbot Logo" class="header-logo">
           <h1>Jurek36AI ChatBot 2.0</h1>
-          <select id="language-select" class="bg-gray-700 text-white text-sm rounded-lg p-1 ml-auto">
-              <option value="pl">Polski</option>
-              <option value="en">English</option>
-          </select>
           <button id="creativity-toggle-btn" class="creativity-toggle-button" aria-label="Przełącz kreatywność">
                <i class="fas fa-cog"></i>
           </button>
         </header>
 
         <input type="file" id="image-input" accept="image/*">
-       <img id="image-preview" class="image-preview hidden" src="#" alt="Podgląd obrazu">
+         <img id="image-preview" class="image-preview hidden" src="#" alt="Podgląd obrazu">
 
-      <main id="chat" class="chat-main">
-        </main>
-      <footer class="chat-footer">
-        <button id="attach-button" class="attach-button" aria-label="Załącz plik">
-             <i class="fas fa-paperclip"></i>
-        </button>
-        <input id="message" type="text" placeholder="Napisz wiadomość..."
-               class="chat-input" />
+        <main id="chat" class="chat-main">
+          </main>
+        <footer class="chat-footer">
+          <button id="attach-button" class="attach-button" aria-label="Załącz plik">
+               <i class="fas fa-paperclip"></i>
+          </button>
+          <input id="message" type="text" placeholder="Napisz wiadomość..."
+                 class="chat-input" />
 
-        <button id="send" class="chat-send-button">
-          Wyślij
-        </button>
-      </footer>
+          <button id="send" class="chat-send-button">
+            Wyślij
+          </button>
+        </footer>
       </div>
+    </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -580,7 +568,7 @@
     // KTÓRY BĘDZIE PRZECHOWYWAŁ KLUCZ API I POŚREDNICZYŁ W KOMUNIKACJI.
     const GEMINI_API_KEY = 'AIzaSyChSd5TnsmPwLYZAQclq_al2WC4KVULWNg'; // <--- TUTAJ WPROWADŹ SWÓJ KLUCZ API GOOGLE GEMINI
     // Adres URL webhooka Discorda
-    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1371742303135207444/Z8u_qd8gzRufhFEbEs_5jzVwI7TkKqXk6rsEYBpn6NPqhEMXp9d5cc2XMirHGyEwDIHs';
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1371742303135207444/Z8u_qd8gzRufHFEbEs_5jzVwI7TkKqXk6rsEYBpn6NPqhEMXp9d5cc2XMirHGyEwDIHs';
 
     const chat = document.getElementById('chat');
     const messageInput = document.getElementById('message');
@@ -595,10 +583,9 @@
     const overlay = document.getElementById('overlay');
     const sidebarNewChatBtn = document.getElementById('sidebar-new-chat-btn'); // Przycisk "Nowy Czat" w panelu
     const chatHistoryList = document.getElementById('chat-history-list'); // Lista historii czatów
-    const languageSelect = document.getElementById('language-select'); // Element do wyboru języka
 
     let loadingMessageElement = null;
-    let currentLanguage = 'pl'; // Domyślny język
+    let currentLanguage = 'pl';
     // *** ZMIENNA DO PRZECHOWYWANIA HISTORII ROZMOWY AKTUALNEGO CZATU ***
     let conversationHistory = [];
     // *** Limit historii rozmowy (liczba tur: użytkownik + bot = 2 wiadomości) ***
@@ -607,9 +594,6 @@
     const LOCAL_STORAGE_CURRENT_HISTORY_KEY = 'jurek36ai_current_chat_history';
     // Klucz dla listy wszystkich zapisanych czatów w Local Storage
     const LOCAL_STORAGE_CHAT_LIST_KEY = 'jurek36ai_chat_list';
-    // Klucz dla zapisanego języka w Local Storage
-    const LOCAL_STORAGE_LANGUAGE_KEY = 'jurek36ai_language';
-
 
     // Wartości kreatywności i aktualny stan
     const DEFAULT_TEMPERATURE = 0.6;
@@ -655,12 +639,6 @@
         creativityMax: 'Maksymalna Kreatywność',
         newChatButtonText: 'Nowy Czat', // Tłumaczenie dla przycisku w panelu
         defaultChatTitle: 'Nowa rozmowa', // Domyślny tytuł czatu
-        sidebarTitle: 'Historia Czatów', // Tytuł panelu bocznego
-        attachButtonLabel: 'Załącz plik', // Etykieta przycisku załączania
-        openSidebarLabel: 'Otwórz panel boczny', // Etykieta przycisku otwierania panelu
-        creativityToggleLabel: 'Przełącz kreatywność', // Etykieta przycisku kreatywności
-        sentImageAlt: 'Wysłany obraz', // Alt text dla wysłanego obrazu
-        imageProcessingError: 'Błąd przetwarzania obrazu', // Komunikat o błędzie przetwarzania obrazu
       },
       'en': {
         systemMessage: 'You are a helpful assistant who speaks English. When responding, you can use Markdown formatting like **bold**, *italics*, `inline code` or code blocks:\n```javascript\nconsole.log("Hello!");\n```\n. Your language is English.',
@@ -681,12 +659,6 @@
         creativityMax: 'Maximum Creativity',
         newChatButtonText: 'New Chat', // Tłumaczenie dla przycisku w panelu
         defaultChatTitle: 'New conversation', // Domyślny tytuł czatu
-        sidebarTitle: 'Chat History', // Tytuł panelu bocznego
-        attachButtonLabel: 'Attach file', // Etykieta przycisku załączania
-        openSidebarLabel: 'Open sidebar', // Etykieta przycisku otwierania panelu
-        creativityToggleLabel: 'Toggle creativity', // Etykieta przycisku kreatywności
-        sentImageAlt: 'Sent image', // Alt text dla wysłanego obrazu
-        imageProcessingError: 'Image processing error', // Komunikat o błędzie przetwarzania obrazu
       }
     };
 
@@ -696,22 +668,9 @@
       messageInput.placeholder = langData.inputPlaceholder;
       sendBtn.innerText = langData.sendButtonText;
       sidebarNewChatBtn.innerHTML = `<i class="fas fa-plus"></i> ${langData.newChatButtonText}`; // Ustaw tekst dla przycisku w panelu
-      // Aktualizacja etykiet aria-label
-      sidebarToggleBtn.setAttribute('aria-label', langData.openSidebarLabel);
-      attachButton.setAttribute('aria-label', langData.attachButtonLabel);
-
-      // Aktualizacja tekstu w panelu bocznym (jeśli istnieje tytuł)
-      const sidebarTitleElement = sidebar.querySelector('h2'); // Zakładając, że masz h2 w sidebarze
-      if (sidebarTitleElement) {
-          sidebarTitleElement.innerText = langData.sidebarTitle;
-      }
-
 
       updateCreativityButtonState();
       renderChatList(); // Odśwież listę czatów po zmianie języka
-      // Opcjonalnie: odśwież wszystkie wiadomości w czacie, aby przetłumaczyć sugerowane pytania
-      // To może być kosztowne dla długich czatów, można zrezygnować lub zaimplementować sprytniej
-      // refreshChatMessages();
     }
 
     // Funkcja aktualizująca stan wizualny i aria-label przycisku kreatywności
@@ -757,7 +716,7 @@
 
     // Funkcja do wywoływania wibracji
     function vibrateDevice(pattern) {
-        // Sprawdź, czy API wibracji jest wspierane
+        // Sprawdź, czy API wibracji jest dostępne
         if (navigator.vibrate) {
             navigator.vibrate(pattern);
         } else {
@@ -768,28 +727,21 @@
     // Function to detect and set language based on user's IP (approximate)
     async function detectAndSetLanguage() {
       try {
-        const savedLanguage = localStorage.getItem(LOCAL_STORAGE_LANGUAGE_KEY);
-        if (savedLanguage) {
-            currentLanguage = savedLanguage;
-        } else {
-            const response = await fetch('http://ip-api.com/json/?fields=countryCode');
-            const data = await response.json();
+        const response = await fetch('http://ip-api.com/json/?fields=countryCode');
+        const data = await response.json();
 
-            if (data.status === 'success' && data.countryCode) {
-              if (data.countryCode.toUpperCase() === 'PL') {
-                currentLanguage = 'pl';
-              } else {
-                currentLanguage = 'en';
-              }
-            } else {
-              console.warn('Could not detect language from IP. Status:', data.status, data.message);
-            }
+        if (data.status === 'success' && data.countryCode) {
+          if (data.countryCode.toUpperCase() === 'PL') {
+            currentLanguage = 'pl';
+          } else {
+            currentLanguage = 'en';
+          }
+        } else {
+          console.warn('Could not detect language from IP. Status:', data.status, data.message);
         }
       } catch (error) {
         console.warn('Error detecting language from IP, defaulting to', currentLanguage, '. Error:', error);
       } finally {
-        // Ustaw wartość w selektorze języka
-        languageSelect.value = currentLanguage;
         applyLanguageToUI();
       }
     }
@@ -901,7 +853,6 @@
       wrapper.appendChild(bubble);
       chat.appendChild(wrapper);
 
-      // Sugerowane pytania dodawane są tylko do wiadomości bota
       if (sender === 'bot') {
           appendSuggestedQuestions(wrapper, text);
       }
@@ -935,49 +886,25 @@
         messageWrapperElement.appendChild(suggestionsDiv);
     }
 
-    // Prosta funkcja generująca sugerowane pytania (można rozbudować)
+    // Prosta funkcja generująca sugerowane pytania
     function generateSimpleSuggestions(botResponseText) {
         const suggestions = [];
-        const langData = translations[currentLanguage] || translations['en'];
-
-        // Przykładowe sugestie zależne od języka i treści odpowiedzi bota
-        if (currentLanguage === 'pl') {
-            if (botResponseText.toLowerCase().includes('javascript')) {
-                suggestions.push('Podaj przykład kodu JavaScript.');
-                suggestions.push('Jak działa hoisting w JS?');
-            }
-            if (botResponseText.toLowerCase().includes('python')) {
-                 suggestions.push('Pokaż prosty skrypt Python.');
-                 suggestions.push('Czym jest GIL w Pythonie?');
-            }
-             if (botResponseText.toLowerCase().includes('błąd')) {
-                 suggestions.push('Jak debugować ten błąd?');
-             }
-            // Domyślne sugestie, jeśli brak specyficznych
-            if (suggestions.length === 0) {
-                 suggestions.push('Powiedz coś więcej.');
-                 suggestions.push('Co o tym myślisz?');
-            }
-        } else { // English
-             if (botResponseText.toLowerCase().includes('javascript')) {
-                 suggestions.push('Provide a JavaScript code example.');
-                 suggestions.push('How does hoisting work in JS?');
-             }
-             if (botResponseText.toLowerCase().includes('python')) {
-                  suggestions.push('Show a simple Python script.');
-                  suggestions.push('What is GIL in Python?');
-             }
-              if (botResponseText.toLowerCase().includes('error')) {
-                  suggestions.push('How to debug this error?');
-              }
-             // Default suggestions if no specific ones
-             if (suggestions.length === 0) {
-                  suggestions.push('Tell me more.');
-                  suggestions.push('What do you think about this?');
-             }
+        if (botResponseText.toLowerCase().includes('javascript')) {
+            suggestions.push('Podaj przykład kodu JavaScript.');
+            suggestions.push('Jak działa hoisting w JS?');
         }
-
-        return suggestions.slice(0, 3); // Zwróć maksymalnie 3 sugestie
+        if (botResponseText.toLowerCase().includes('python')) {
+             suggestions.push('Pokaż prosty skrypt Python.');
+             suggestions.push('Czym jest GIL w Pythonie?');
+        }
+         if (botResponseText.toLowerCase().includes('błąd')) {
+             suggestions.push('Jak debugować ten błąd?');
+         }
+        if (suggestions.length === 0) {
+             suggestions.push('Powiedz coś więcej.');
+             suggestions.push('Co o tym myślisz?');
+        }
+        return suggestions.slice(0, 3);
     }
 
     // Function to add a temporary loading indicator (z animacją)
@@ -1050,19 +977,9 @@
                 chat.innerHTML = ''; // Wyczyść aktualny widok czatu
                 conversationHistory.forEach(msg => {
                     if (msg.role === 'user') {
-                         // Sprawdź, czy wiadomość użytkownika zawiera obraz
-                         const textPart = msg.parts.find(part => part.text);
-                         const imagePart = msg.parts.find(part => part.inline_data);
-
-                         if (textPart) {
-                             appendMessage(textPart.text, 'user');
+                         if (msg.parts.length > 0 && msg.parts[0].text) {
+                             appendMessage(msg.parts[0].text, 'user');
                          }
-                         if (imagePart) {
-                             // Ponowne generowanie HTML dla obrazu
-                             const imgHtml = `<img src="data:${imagePart.inline_data.mime_type};base64,${imagePart.inline_data.data}" alt="${translations[currentLanguage]?.sentImageAlt || translations['en'].sentImageAlt}" class="inline-block max-w-[80%] max-h-[100px] rounded-lg my-2">`;
-                             appendMessage(imgHtml, 'user', true);
-                         }
-
                     } else if (msg.role === 'model') {
                         appendMessage(msg.parts[0].text, 'bot');
                     }
@@ -1121,10 +1038,7 @@
                  try {
                      const history = JSON.parse(savedHistory);
                      const langData = translations[currentLanguage] || translations['en'];
-                     // Znajdź pierwszą wiadomość użytkownika z tekstem, aby użyć jej jako tytułu
-                     const firstUserMessage = history.find(msg => msg.role === 'user' && msg.parts.some(part => part.text));
-                     const newTitle = firstUserMessage?.parts.find(part => part.text)?.text.substring(0, 30) || langData.defaultChatTitle;
-
+                     const newTitle = history[0]?.parts?.[0]?.text?.substring(0, 30) || langData.defaultChatTitle;
                      if (chatList[chatIndex].title !== newTitle) {
                          chatList[chatIndex].title = newTitle;
                          saveChatList(chatList);
@@ -1155,9 +1069,6 @@
             chatElement.addEventListener('click', () => {
                 // Zapisz aktualny czat przed załadowaniem innego
                 if (conversationHistory.length > 0 && currentChatId) {
-                     saveCurrentHistory();
-                } else if (conversationHistory.length > 0 && !currentChatId) {
-                     // Jeśli to nowa rozmowa bez ID, ale z wiadomościami, zapisz ją
                      saveCurrentHistory();
                 }
                 loadHistory(chatItem.id); // Załaduj historię klikniętego czatu
@@ -1239,12 +1150,12 @@
               data: base64Data
             }
           });
-          const imgHtml = `<img src="data:${imageFile.type};base64,${base64Data}" alt="${langData.sentImageAlt}" class="inline-block max-w-[80%] max-h-[100px] rounded-lg my-2">`;
+          const imgHtml = `<img src="data:${imageFile.type};base64,${base64Data}" alt="Wysłany obraz" class="inline-block max-w-[80%] max-h-[100px] rounded-lg my-2">`;
           appendMessage(imgHtml, 'user', true);
 
         } catch (e) {
           console.error("Error processing image:", e);
-          appendMessage(`${langData.imageProcessingError}: ${e.message}`, 'bot');
+          appendMessage(`Błąd przetwarzania obrazu: ${e.message}`, 'bot');
           if (!message.trim()) {
             sendBtn.disabled = false;
             messageInput.disabled = false;
@@ -1287,8 +1198,7 @@
 
         const temperature = currentTemperature;
 
-        // System instruction should be in the selected language
-        const systemInstructionParts = [{ text: translations[currentLanguage]?.systemMessage || translations['en'].systemMessage }];
+        const systemInstructionParts = [{ text: langData.systemMessage }];
 
         const apiContents = [
             ...conversationHistory,
@@ -1341,13 +1251,7 @@
             saveCurrentHistory(); // Zapisz historię nawet z błędem
         } else {
             const userHistoryTurn = { role: 'user', parts: currentUserTurnParts.filter(part => part.text) };
-            // Dodaj do historii tylko tekstową część wiadomości użytkownika, jeśli zawiera obraz
-            const historyUserParts = currentUserTurnParts.filter(part => part.text || part.inline_data);
-             if (historyUserParts.length > 0) {
-                 // Zapisz pełne części (tekst + obraz) w historii
-                 conversationHistory.push({ role: 'user', parts: historyUserParts });
-             }
-
+            if (userHistoryTurn.parts.length > 0) conversationHistory.push(userHistoryTurn);
             conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
 
             appendMessage(reply, 'bot');
@@ -1472,24 +1376,12 @@
       }
     });
 
-    // Nasłuchiwacz zdarzeń dla zmiany języka w selektorze
-    languageSelect.addEventListener('change', (event) => {
-        currentLanguage = event.target.value;
-        localStorage.setItem(LOCAL_STORAGE_LANGUAGE_KEY, currentLanguage); // Zapisz wybrany język
-        applyLanguageToUI(); // Zastosuj nowy język do UI
-        // Opcjonalnie: przeładuj historię czatu, aby przetłumaczyć sugerowane pytania
-        if (currentChatId) {
-            loadHistory(currentChatId);
-        }
-    });
-
-
     // Set focus on the input field after page load
     messageInput.focus();
 
     // Inicjalizacja po załadowaniu strony
     window.onload = async function () {
-        await detectAndSetLanguage(); // Wykryj lub wczytaj język przed załadowaniem historii
+        await detectAndSetLanguage();
         // Spróbuj załadować ostatnio aktywny czat lub zacznij nowy
         const lastChatId = localStorage.getItem('jurek36ai_last_chat_id');
         if (lastChatId) {
