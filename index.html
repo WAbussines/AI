@@ -10,21 +10,24 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 
-
   <style>
     /* Custom scrollbar for better appearance */
-    #chat::-webkit-scrollbar {
+    #chat::-webkit-scrollbar,
+    #chat-history-list::-webkit-scrollbar { /* Dodano scrollbar dla listy historii */
       width: 8px;
     }
-    #chat::-webkit-scrollbar-track {
+    #chat::-webkit-scrollbar-track,
+    #chat-history-list::-webkit-scrollbar-track { /* Dodano scrollbar dla listy historii */
       background: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
     }
-    #chat::-webkit-scrollbar-thumb {
+    #chat::-webkit-scrollbar-thumb,
+    #chat-history-list::-webkit-scrollbar-thumb { /* Dodano scrollbar dla listy historii */
       background: rgba(255, 255, 255, 0.3);
       border-radius: 10px;
     }
-    #chat::-webkit-scrollbar-thumb:hover {
+    #chat::-webkit-scrollbar-thumb:hover,
+    #chat-history-list::-webkit-scrollbar-thumb:hover { /* Dodano scrollbar dla listy historii */
       background: rgba(255, 255, 255, 0.5);
     }
 
@@ -51,15 +54,69 @@
       }
     }
 
-    /* Center and constrain the chat container */
+    /* Main layout container */
+    .main-container {
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden; /* Zapobiega przewijaniu przy wysuniętym panelu */
+    }
+
+    /* Sidebar styling */
+    .sidebar {
+        width: 250px; /* Szerokość panelu bocznego */
+        background-color: rgba(30, 41, 59, 0.95);
+        color: #e2e8f0;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        transform: translateX(-100%); /* Domyślnie ukryty poza ekranem */
+        transition: transform 0.3s ease-in-out; /* Animacja wysuwania */
+        position: fixed; /* Panel boczny jest stały */
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 20; /* Wyższa warstwa niż główna treść */
+        box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+    }
+
+    .sidebar.open {
+        transform: translateX(0); /* Wysunięty panel */
+    }
+
+    /* Overlay when sidebar is open */
+    .overlay {
+        display: none; /* Domyślnie ukryty */
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 10; /* Pomiędzy panelem a główną treścią */
+    }
+
+    .overlay.visible {
+        display: block;
+    }
+
+    /* Chat container styling */
     .chat-container-wrapper {
+        flex-grow: 1; /* Zajmuje pozostałą przestrzeń */
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 100vh;
         padding: 1rem;
         width: 100%;
+        transition: margin-left 0.3s ease-in-out; /* Przesunięcie głównej treści przy wysuwaniu panelu */
     }
+
+     /* Przesunięcie głównej treści, gdy panel jest otwarty (opcjonalne, jeśli panel nie jest fixed) */
+    /* .main-container.sidebar-open .chat-container-wrapper {
+        margin-left: 250px;
+    } */
+
 
     .chat-container {
         width: 100%;
@@ -96,6 +153,7 @@
         margin: 0;
         text-align: left;
         color: #e2e8f0;
+        flex-grow: 1; /* Pozwala tytułowi zająć dostępną przestrzeń */
     }
 
     /* Styl dla logo w nagłówku (element img) */
@@ -105,21 +163,21 @@
         border-radius: 0.25rem;
     }
 
-    /* New Chat Button Styling */
-    .new-chat-button {
-        background-color: rgba(71, 85, 105, 0.8);
+    /* Styl dla przycisku otwierającego panel boczny */
+    .sidebar-toggle-button {
+        background: none;
         border: none;
         color: white;
-        font-size: 1rem;
+        font-size: 1.5rem;
         cursor: pointer;
-        padding: 0.5rem;
-        border-radius: 0.5rem;
-        transition: background-color 0.2s ease-in-out;
+        padding: 0 0.5rem;
+        transition: color 0.2s ease-in-out;
     }
 
-    .new-chat-button:hover {
-        background-color: rgba(45, 55, 72, 0.8);
+    .sidebar-toggle-button:hover {
+        color: #a0aec0;
     }
+
 
     /* Styl dla przycisku przełączania kreatywności (ikona) */
     .creativity-toggle-button {
@@ -131,7 +189,6 @@
         cursor: pointer;
         font-size: 1rem;
         transition: background-color 0.2s ease-in-out;
-        margin-left: auto;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -149,9 +206,6 @@
     .creativity-toggle-button.active:hover {
          background-color: rgba(49, 130, 189, 0.9); /* blue-500 z przezroczystością */
     }
-
-
-    /* Usunięto style dla sekcji ustawień persony */
 
     /* Ukryj standardowe pole input file */
     #image-input {
@@ -391,34 +445,111 @@
       100% { content: '.'; }
     }
 
+    /* Styl dla listy historii czatów w panelu bocznym */
+    .chat-history-list {
+        flex-grow: 1; /* Zajmuje dostępną przestrzeń */
+        margin-top: 1rem;
+        overflow-y: auto; /* Włącz przewijanie, jeśli lista jest długa */
+        padding-right: 0.5rem; /* Miejsce na scrollbar */
+    }
+
+    /* Styl dla pojedynczego elementu historii czatu */
+    .chat-history-item {
+        background-color: rgba(71, 85, 105, 0.5);
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+        font-size: 0.9rem;
+        overflow: hidden; /* Ukryj przepełniony tekst */
+        text-overflow: ellipsis; /* Dodaj wielokropek */
+        white-space: nowrap; /* Zapobiegaj zawijaniu tekstu */
+    }
+
+    .chat-history-item:hover {
+        background-color: rgba(71, 85, 105, 0.8);
+    }
+
+     .chat-history-item.active {
+        background-color: rgba(66, 153, 225, 0.7); /* Podświetlenie aktywnego czatu */
+     }
+
+     /* Styl dla przycisku "Nowy Czat" w panelu bocznym */
+     .sidebar-new-chat-button {
+        background-color: rgba(66, 153, 225, 0.9);
+        border: none;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease-in-out;
+        text-align: center;
+        margin-bottom: 1rem; /* Odstęp od listy */
+     }
+
+     .sidebar-new-chat-button:hover {
+        background-color: rgba(49, 130, 189, 0.9);
+     }
+
+
+     /* Media query for smaller screens */
+     @media (max-width: 600px) {
+         .sidebar {
+             width: 100%; /* Na małych ekranach panel zajmuje całą szerokość */
+         }
+         /* .main-container.sidebar-open .chat-container-wrapper {
+            margin-left: 0; // Brak przesunięcia głównej treści
+         } */
+     }
+
+
   </style>
 </head>
 <body>
-  <div class="chat-container-wrapper">
-    <div class="chat-container">
-      <header class="chat-header">
-        <button id="new-chat-btn" class="new-chat-button" aria-label="Nowy czat">
-            <i class="fas fa-plus"></i> </button>
-        <img src="https://i.postimg.cc/rFgBD37y/file-00000000eef061f4966205833b4b6822-removebg-preview.png" alt="Jurek36AI Chatbot Logo" class="header-logo">
-        <h1>Jurek36AI ChatBot 2.0</h1> <button id="creativity-toggle-btn" class="creativity-toggle-button" aria-label="Przełącz kreatywność">
-             <i class="fas fa-cog"></i> </button>
-      </header>
-
-      <input type="file" id="image-input" accept="image/*">
-       <img id="image-preview" class="image-preview hidden" src="#" alt="Podgląd obrazu">
-
-
-      <main id="chat" class="chat-main">
-        </main>
-      <footer class="chat-footer">
-        <button id="attach-button" class="attach-button" aria-label="Załącz plik">
-             <i class="fas fa-paperclip"></i> </button>
-        <input id="message" type="text" placeholder="Napisz wiadomość..."
-               class="chat-input" />
-        <button id="send" class="chat-send-button">
-          Wyślij
+  <div class="main-container" id="main-container">
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-new-chat-button" id="sidebar-new-chat-btn">
+            <i class="fas fa-plus"></i> Nowy Czat
         </button>
-      </footer>
+        <div class="chat-history-list" id="chat-history-list">
+            </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="chat-container-wrapper">
+      <div class="chat-container">
+        <header class="chat-header">
+          <button class="sidebar-toggle-button" id="sidebar-toggle-btn" aria-label="Otwórz panel boczny">
+              <i class="fas fa-bars"></i>
+          </button>
+
+          <img src="https://i.postimg.cc/rFgBD37y/file-00000000eef061f4966205833b4b6822-removebg-preview.png" alt="Jurek36AI Chatbot Logo" class="header-logo">
+          <h1>Jurek36AI ChatBot 2.0</h1>
+          <button id="creativity-toggle-btn" class="creativity-toggle-button" aria-label="Przełącz kreatywność">
+               <i class="fas fa-cog"></i>
+          </button>
+        </header>
+
+        <input type="file" id="image-input" accept="image/*">
+         <img id="image-preview" class="image-preview hidden" src="#" alt="Podgląd obrazu">
+
+        <main id="chat" class="chat-main">
+          </main>
+        <footer class="chat-footer">
+          <button id="attach-button" class="attach-button" aria-label="Załącz plik">
+               <i class="fas fa-paperclip"></i>
+          </button>
+          <input id="message" type="text" placeholder="Napisz wiadomość..."
+                 class="chat-input" />
+
+          <button id="send" class="chat-send-button">
+            Wyślij
+          </button>
+        </footer>
+      </div>
     </div>
   </div>
 
@@ -434,35 +565,41 @@
     // DLA APLIKACJI PRODUKCYJNYCH ZAWSZE UŻYWAJ BEZPIECZNEGO BACKENDU,
     // KTÓRY BĘDZIE PRZECHOWYWAŁ KLUCZ API I POŚREDNICZYŁ W KOMUNIKACJI.
     const GEMINI_API_KEY = 'AIzaSyChSd5TnsmPwLYZAQclq_al2WC4KVULWNg'; // <--- TUTAJ WPROWADŹ SWÓJ KLUCZ API GOOGLE GEMINI
+    // Adres URL webhooka Discorda
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1371742303135207444/Z8u_qd8gzRufHFEbEs_5jzVwI7TkKqXk6rsEYBpn6NPqhEMXp9d5cc2XMirHGyEwDIHs';
 
     const chat = document.getElementById('chat');
     const messageInput = document.getElementById('message');
     const sendBtn = document.getElementById('send');
-    const newChatBtn = document.getElementById('new-chat-btn');
     const imageInput = document.getElementById('image-input');
     const imagePreview = document.getElementById('image-preview');
     const attachButton = document.getElementById('attach-button');
     const creativityToggleBtn = document.getElementById('creativity-toggle-btn');
-
-    // Usunięto zmienne dla elementów audio
-    // const sendSound = document.getElementById('send-sound');
-    // const receiveSound = document.getElementById('receive-sound');
-
+    // Elementy panelu bocznego
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const overlay = document.getElementById('overlay');
+    const sidebarNewChatBtn = document.getElementById('sidebar-new-chat-btn'); // Przycisk "Nowy Czat" w panelu
+    const chatHistoryList = document.getElementById('chat-history-list'); // Lista historii czatów
 
     let loadingMessageElement = null;
     let currentLanguage = 'pl';
-
-    // *** ZMIENNA DO PRZECHOWYWANIA HISTORII ROZMOWY ***
+    // *** ZMIENNA DO PRZECHOWYWANIA HISTORII ROZMOWY AKTUALNEGO CZATU ***
     let conversationHistory = [];
     // *** Limit historii rozmowy (liczba tur: użytkownik + bot = 2 wiadomości) ***
     const HISTORY_LIMIT = 20;
-    const LOCAL_STORAGE_HISTORY_KEY = 'jurek36ai_chat_history';
+    // Klucz dla aktualnej historii czatu w Local Storage
+    const LOCAL_STORAGE_CURRENT_HISTORY_KEY = 'jurek36ai_current_chat_history';
+    // Klucz dla listy wszystkich zapisanych czatów w Local Storage
+    const LOCAL_STORAGE_CHAT_LIST_KEY = 'jurek36ai_chat_list';
 
     // Wartości kreatywności i aktualny stan
     const DEFAULT_TEMPERATURE = 0.6;
     const MAX_TEMPERATURE = 1.0;
     let currentTemperature = DEFAULT_TEMPERATURE;
 
+    // Zmienna do przechowywania ID aktualnie załadowanego czatu
+    let currentChatId = null;
 
     // Marked.js configuration
     marked.setOptions({
@@ -498,6 +635,8 @@
         suggestedQuestionsTitle: 'Możesz zapytać:',
         creativityNormal: 'Normalna Kreatywność',
         creativityMax: 'Maksymalna Kreatywność',
+        newChatButtonText: 'Nowy Czat', // Tłumaczenie dla przycisku w panelu
+        defaultChatTitle: 'Nowa rozmowa', // Domyślny tytuł czatu
       },
       'en': {
         systemMessage: 'You are a helpful assistant who speaks English. When responding, you can use Markdown formatting like **bold**, *italics*, `inline code` or code blocks:\n```javascript\nconsole.log("Hello!");\n```\n. Your language is English.',
@@ -516,6 +655,8 @@
         suggestedQuestionsTitle: 'You can ask:',
         creativityNormal: 'Normal Creativity',
         creativityMax: 'Maximum Creativity',
+        newChatButtonText: 'New Chat', // Tłumaczenie dla przycisku w panelu
+        defaultChatTitle: 'New conversation', // Domyślny tytuł czatu
       }
     };
 
@@ -524,8 +665,10 @@
       const langData = translations[currentLanguage] || translations['en'];
       messageInput.placeholder = langData.inputPlaceholder;
       sendBtn.innerText = langData.sendButtonText;
+      sidebarNewChatBtn.innerHTML = `<i class="fas fa-plus"></i> ${langData.newChatButtonText}`; // Ustaw tekst dla przycisku w panelu
 
       updateCreativityButtonState();
+      renderChatList(); // Odśwież listę czatów po zmianie języka
     }
 
     // Funkcja aktualizująca stan wizualny i aria-label przycisku kreatywności
@@ -569,7 +712,7 @@
         });
     }
 
-    // NOWE: Funkcja do wywoływania wibracji
+    // Funkcja do wywoływania wibracji
     function vibrateDevice(pattern) {
         // Sprawdź, czy API wibracji jest dostępne
         if (navigator.vibrate) {
@@ -578,7 +721,6 @@
             console.warn("API wibracji nie jest wspierane w tej przeglądarce.");
         }
     }
-
 
     // Function to detect and set language based on user's IP (approximate)
     async function detectAndSetLanguage() {
@@ -627,6 +769,8 @@
         const copyButton = document.createElement('button');
         copyButton.className = 'copy-button';
         copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+        copyButton.setAttribute('aria-label', langData.copyButtonText);
+
 
         codeContainer.appendChild(lineNumbersDiv);
         codeContainer.appendChild(preElement.cloneNode(true));
@@ -634,7 +778,6 @@
 
         return codeContainer;
     }
-
 
     // Function to append messages to the chat window
     function appendMessage(text, sender, isHtml = false) {
@@ -697,7 +840,6 @@
 
         addCopyButtonListeners(bubble);
 
-
       } else {
         if (isHtml) {
              bubble.innerHTML = text;
@@ -709,11 +851,9 @@
       wrapper.appendChild(bubble);
       chat.appendChild(wrapper);
 
-
       if (sender === 'bot') {
           appendSuggestedQuestions(wrapper, text);
       }
-
 
       chat.scrollTop = chat.scrollHeight;
       return bubble;
@@ -765,7 +905,6 @@
         return suggestions.slice(0, 3);
     }
 
-
     // Function to add a temporary loading indicator (z animacją)
     function appendLoadingIndicator() {
       const langData = translations[currentLanguage] || translations['en'];
@@ -790,32 +929,50 @@
       }
     }
 
-    // Funkcja do zapisywania historii w Local Storage
-    function saveHistory() {
-        try {
-            const historyToSave = conversationHistory.map(msg => {
-                 if (msg.role === 'user' && msg.parts.some(part => part.inline_data)) {
-                     const textPart = msg.parts.find(part => part.text);
-                     return {
-                         role: msg.role,
-                         parts: textPart ? [textPart] : []
-                     };
-                 }
-                 return msg;
-            }).filter(msg => msg.parts.length > 0);
+    // Funkcja do generowania unikalnego ID dla czatu
+    function generateChatId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
 
-            localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(historyToSave));
+    // Funkcja do zapisywania aktualnej historii w Local Storage
+    function saveCurrentHistory() {
+        try {
+            if (!currentChatId && conversationHistory.length > 0) {
+                // Jeśli to nowa rozmowa i coś zostało napisane, nadaj jej ID
+                currentChatId = generateChatId();
+                const langData = translations[currentLanguage] || translations['en'];
+                const chatTitle = conversationHistory[0]?.parts?.[0]?.text?.substring(0, 30) || langData.defaultChatTitle; // Tytuł z pierwszej wiadomości lub domyślny
+                 addChatToList(currentChatId, chatTitle); // Dodaj do listy czatów
+            }
+
+            if (currentChatId) {
+                 const historyToSave = conversationHistory.map(msg => {
+                     if (msg.role === 'user' && msg.parts.some(part => part.inline_data)) {
+                         const textPart = msg.parts.find(part => part.text);
+                         return {
+                             role: msg.role,
+                             parts: textPart ? [textPart] : []
+                         };
+                     }
+                     return msg;
+                }).filter(msg => msg.parts.length > 0);
+
+                localStorage.setItem(`chat_${currentChatId}`, JSON.stringify(historyToSave));
+                updateChatTitleInList(currentChatId); // Aktualizuj tytuł w liście
+            }
+
         } catch (e) {
-            console.error("Could not save history to Local Storage:", e);
+            console.error("Could not save current history to Local Storage:", e);
         }
     }
 
-    // Funkcja do ładowania historii z Local Storage
-    function loadHistory() {
+    // Funkcja do ładowania historii z Local Storage na podstawie ID
+    function loadHistory(chatId) {
         try {
-            const savedHistory = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+            const savedHistory = localStorage.getItem(`chat_${chatId}`);
             if (savedHistory) {
                 conversationHistory = JSON.parse(savedHistory);
+                chat.innerHTML = ''; // Wyczyść aktualny widok czatu
                 conversationHistory.forEach(msg => {
                     if (msg.role === 'user') {
                          if (msg.parts.length > 0 && msg.parts[0].text) {
@@ -825,28 +982,137 @@
                         appendMessage(msg.parts[0].text, 'bot');
                     }
                 });
-                 chat.scrollTop = chat.scrollHeight;
+                chat.scrollTop = chat.scrollHeight;
+                currentChatId = chatId; // Ustaw aktualne ID czatu
+                highlightActiveChat(chatId); // Podświetl aktywny czat w liście
+            } else {
+                 console.warn(`Chat history with ID ${chatId} not found.`);
+                 startNewChat(); // Jeśli nie znaleziono, zacznij nowy czat
             }
         } catch (e) {
             console.error("Could not load history from Local Storage:", e);
-             conversationHistory = [];
+            conversationHistory = [];
+            startNewChat(); // W przypadku błędu, zacznij nowy czat
         }
     }
 
+    // Funkcja do zarządzania listą czatów w Local Storage
+    function getChatList() {
+        try {
+            const chatList = localStorage.getItem(LOCAL_STORAGE_CHAT_LIST_KEY);
+            return chatList ? JSON.parse(chatList) : [];
+        } catch (e) {
+            console.error("Could not get chat list from Local Storage:", e);
+            return [];
+        }
+    }
 
-    // Function to start a new chat (z czyszczeniem Local Storage)
+    function saveChatList(chatList) {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_CHAT_LIST_KEY, JSON.stringify(chatList));
+        } catch (e) {
+            console.error("Could not save chat list to Local Storage:", e);
+        }
+    }
+
+    // Funkcja do dodawania nowego czatu do listy
+    function addChatToList(chatId, title) {
+        const chatList = getChatList();
+        // Sprawdź, czy czat o tym ID już istnieje
+        if (!chatList.find(chat => chat.id === chatId)) {
+            chatList.unshift({ id: chatId, title: title }); // Dodaj na początek listy
+            saveChatList(chatList);
+            renderChatList(); // Odśwież widok listy
+        }
+    }
+
+     // Funkcja do aktualizacji tytułu czatu w liście (np. po pierwszej wiadomości)
+     function updateChatTitleInList(chatId) {
+         const chatList = getChatList();
+         const chatIndex = chatList.findIndex(chat => chat.id === chatId);
+         if (chatIndex !== -1) {
+             const savedHistory = localStorage.getItem(`chat_${chatId}`);
+             if (savedHistory) {
+                 try {
+                     const history = JSON.parse(savedHistory);
+                     const langData = translations[currentLanguage] || translations['en'];
+                     const newTitle = history[0]?.parts?.[0]?.text?.substring(0, 30) || langData.defaultChatTitle;
+                     if (chatList[chatIndex].title !== newTitle) {
+                         chatList[chatIndex].title = newTitle;
+                         saveChatList(chatList);
+                         renderChatList(); // Odśwież widok listy, jeśli tytuł się zmienił
+                     }
+                 } catch (e) {
+                     console.error("Error parsing history for title update:", e);
+                 }
+             }
+         }
+     }
+
+
+    // Funkcja do renderowania listy czatów w panelu bocznym
+    function renderChatList() {
+        const chatList = getChatList();
+        chatHistoryList.innerHTML = ''; // Wyczyść aktualną listę
+
+        chatList.forEach(chatItem => {
+            const chatElement = document.createElement('div');
+            chatElement.className = 'chat-history-item';
+            if (chatItem.id === currentChatId) {
+                 chatElement.classList.add('active'); // Podświetl aktywny czat
+            }
+            chatElement.innerText = chatItem.title;
+            chatElement.dataset.chatId = chatItem.id; // Zapisz ID czatu w elemencie
+
+            chatElement.addEventListener('click', () => {
+                // Zapisz aktualny czat przed załadowaniem innego
+                if (conversationHistory.length > 0 && currentChatId) {
+                     saveCurrentHistory();
+                }
+                loadHistory(chatItem.id); // Załaduj historię klikniętego czatu
+                toggleSidebar(); // Zamknij panel po kliknięciu
+            });
+
+            chatHistoryList.appendChild(chatElement);
+        });
+    }
+
+    // Funkcja do podświetlania aktywnego czatu w liście
+    function highlightActiveChat(chatId) {
+        const items = chatHistoryList.querySelectorAll('.chat-history-item');
+        items.forEach(item => {
+            item.classList.remove('active');
+            if (item.dataset.chatId === chatId) {
+                item.classList.add('active');
+            }
+        });
+    }
+
+
+    // Function to start a new chat (z czyszczeniem Local Storage dla aktualnego czatu)
     function startNewChat() {
+        // Zapisz aktualny czat przed rozpoczęciem nowego
+        if (conversationHistory.length > 0 && currentChatId) {
+             saveCurrentHistory();
+        } else if (conversationHistory.length > 0 && !currentChatId) {
+             // Jeśli była to nowa rozmowa bez ID, ale z wiadomościami, zapisz ją
+             saveCurrentHistory();
+        }
+
+
         conversationHistory = [];
-        chat.innerHTML = '';
-        saveHistory();
+        chat.innerHTML = ''; // Wyczyść widok czatu
+        currentChatId = null; // Zresetuj aktualne ID czatu
+        localStorage.removeItem(LOCAL_STORAGE_CURRENT_HISTORY_KEY); // Opcjonalnie usuń starą "aktualną" historię
+
         messageInput.focus();
         imageInput.value = null;
         imagePreview.classList.add('hidden');
         imagePreview.src = '#';
-    }
 
-    // Usunięto funkcję playSound
-    // function playSound(audioElement) { ... }
+        renderChatList(); // Odśwież listę czatów (żeby usunąć podświetlenie)
+        toggleSidebar(); // Zamknij panel po kliknięciu
+    }
 
 
     // Funkcja do konwersji pliku obrazu na base64
@@ -859,7 +1125,6 @@
         });
     }
 
-
     // Function to handle sending messages to the Gemini API
     async function sendMessage(message) {
       const langData = translations[currentLanguage] || translations['en'];
@@ -867,7 +1132,7 @@
 
       if (!message.trim() && !imageFile) return;
 
-      const currentUserTurnParts = [];
+      let currentUserTurnParts = [];
 
       if (message.trim()) {
         currentUserTurnParts.push({ text: message });
@@ -892,7 +1157,8 @@
           if (!message.trim()) {
             sendBtn.disabled = false;
             messageInput.disabled = false;
-            newChatBtn.disabled = false;
+            sidebarToggleBtn.disabled = false; // Włącz przycisk panelu
+            sidebarNewChatBtn.disabled = false; // Włącz przycisk Nowy Czat w panelu
             attachButton.disabled = false;
             messageInput.focus();
             return;
@@ -908,21 +1174,22 @@
       if (currentUserTurnParts.length === 0) {
           sendBtn.disabled = false;
           messageInput.disabled = false;
-          newChatBtn.disabled = false;
+          sidebarToggleBtn.disabled = false; // Włącz przycisk panelu
+          sidebarNewChatBtn.disabled = false; // Włącz przycisk Nowy Czat w panelu
           attachButton.disabled = false;
           messageInput.focus();
           return;
       }
 
-
       messageInput.value = '';
       sendBtn.disabled = true;
       messageInput.disabled = true;
-      newChatBtn.disabled = true;
+      sidebarToggleBtn.disabled = true; // Wyłącz przycisk panelu
+      sidebarNewChatBtn.disabled = true; // Wyłącz przycisk Nowy Czat w panelu
       attachButton.disabled = true;
-      appendLoadingIndicator();
-      vibrateDevice([50]); // NOWE: Wibracja przy wysyłaniu
 
+      appendLoadingIndicator();
+      vibrateDevice([50]); // Wibracja przy wysyłaniu
 
       try {
         const modelToUse = 'gemini-1.5-flash';
@@ -979,21 +1246,21 @@
             const userHistoryTurn = { role: 'user', parts: currentUserTurnParts.filter(part => part.text) };
             if (userHistoryTurn.parts.length > 0) conversationHistory.push(userHistoryTurn);
             conversationHistory.push({ role: 'model', parts: [{ text: langData.errorNoReply }] });
-            saveHistory();
+            saveCurrentHistory(); // Zapisz historię nawet z błędem
         } else {
             const userHistoryTurn = { role: 'user', parts: currentUserTurnParts.filter(part => part.text) };
             if (userHistoryTurn.parts.length > 0) conversationHistory.push(userHistoryTurn);
             conversationHistory.push({ role: 'model', parts: [{ text: reply }] });
 
             appendMessage(reply, 'bot');
-            vibrateDevice([100]); // NOWE: Wibracja przy odbieraniu
-            saveHistory();
+            vibrateDevice([100]); // Wibracja przy odbieraniu
+            saveCurrentHistory(); // Zapisz historię po udanej odpowiedzi
         }
 
-        if (conversationHistory.length > HISTORY_LIMIT) {
-            conversationHistory = conversationHistory.slice(conversationHistory.length - HISTORY_LIMIT);
+        // Ograniczenie historii rozmowy
+        if (conversationHistory.length > HISTORY_LIMIT * 2) { // Limit dotyczy par user/model, więc 20 tur to 40 wiadomości
+            conversationHistory = conversationHistory.slice(conversationHistory.length - HISTORY_LIMIT * 2);
         }
-
 
       } catch (err) {
         removeLoadingIndicator();
@@ -1002,21 +1269,61 @@
         const userHistoryTurn = { role: 'user', parts: currentUserTurnParts.filter(part => part.text) };
         if (userHistoryTurn.parts.length > 0) conversationHistory.push(userHistoryTurn);
         conversationHistory.push({ role: 'model', parts: [{ text: `${langData.errorApi}: ${err.message || langData.errorGeneric}` }] });
-        saveHistory();
+        saveCurrentHistory(); // Zapisz historię nawet z błędem
 
-        if (conversationHistory.length > HISTORY_LIMIT) {
-            conversationHistory = conversationHistory.slice(conversationHistory.length - HISTORY_LIMIT);
-        }
-
+         // Ograniczenie historii rozmowy
+         if (conversationHistory.length > HISTORY_LIMIT * 2) {
+             conversationHistory = conversationHistory.slice(conversationHistory.length - HISTORY_LIMIT * 2);
+         }
 
       } finally {
         sendBtn.disabled = false;
         messageInput.disabled = false;
-        newChatBtn.disabled = false;
+        sidebarToggleBtn.disabled = false; // Włącz przycisk panelu
+        sidebarNewChatBtn.disabled = false; // Włącz przycisk Nowy Czat w panelu
         attachButton.disabled = false;
         messageInput.focus();
       }
     }
+
+    // Funkcja do wysyłania informacji o wizycie na stronę do Discorda
+    async function sendVisitInfoToDiscord() {
+        try {
+            // Próba uzyskania IP użytkownika (nie zawsze dokładne/dostępne)
+            const ipResponse = await fetch('https://api64.ipify.org?format=json');
+            const ipData = await ipResponse.json();
+            const userIp = ipData.ip || 'N/A';
+
+            const messageContent = `Ktoś wszedł na stronę Jurek36AI ChatBot 2.0. IP: ${userIp}`;
+
+            const discordResponse = await fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: messageContent
+                }),
+            });
+
+            if (!discordResponse.ok) {
+                console.error('Błąd podczas wysyłania informacji do Discorda:', discordResponse.status, discordResponse.statusText);
+            } else {
+                console.log('Informacja o wizycie wysłana do Discorda.');
+            }
+        } catch (error) {
+            console.error('Wystąpił błąd podczas wysyłania informacji o wizycie:', error);
+        }
+    }
+
+    // Funkcja do przełączania widoczności panelu bocznego
+    function toggleSidebar() {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('visible');
+        // Opcjonalnie: dodaj/usuń klasę do głównego kontenera, aby przesunąć główną treść
+        // document.getElementById('main-container').classList.toggle('sidebar-open');
+    }
+
 
     // Nasłuchiwacz zdarzeń dla przycisku przełączającego kreatywność
     creativityToggleBtn.addEventListener('click', () => {
@@ -1029,6 +1336,14 @@
         console.log("Kreatywność ustawiona na:", currentTemperature);
     });
 
+    // Nasłuchiwacz zdarzeń dla przycisku otwierającego panel boczny
+    sidebarToggleBtn.addEventListener('click', toggleSidebar);
+
+    // Nasłuchiwacz zdarzeń dla overlay (kliknięcie poza panelem zamyka go)
+    overlay.addEventListener('click', toggleSidebar);
+
+    // Nasłuchiwacz zdarzeń dla przycisku "Nowy Czat" w panelu bocznym
+    sidebarNewChatBtn.addEventListener('click', startNewChat);
 
     // Nasłuchiwacz zdarzeń dla pola wyboru obrazu
     imageInput.addEventListener('change', (event) => {
@@ -1051,8 +1366,7 @@
         imageInput.click();
     });
 
-
-    // Event listeners
+    // Event listeners dla wysyłania wiadomości
     sendBtn.addEventListener('click', () => sendMessage(messageInput.value));
     messageInput.addEventListener('keyup', (e) => {
       if (e.key === 'Enter') {
@@ -1060,22 +1374,43 @@
       }
     });
 
-    // Nasłuchiwacz zdarzeń dla przycisku Nowy czat
-    newChatBtn.addEventListener('click', startNewChat);
-
-
     // Set focus on the input field after page load
     messageInput.focus();
 
-    // Detect and set language and load history after page load
+    // Inicjalizacja po załadowaniu strony
     window.onload = async function () {
         await detectAndSetLanguage();
-        loadHistory();
+        // Spróbuj załadować ostatnio aktywny czat lub zacznij nowy
+        const lastChatId = localStorage.getItem('jurek36ai_last_chat_id');
+        if (lastChatId) {
+            loadHistory(lastChatId);
+        } else {
+            startNewChat(); // Zaczyna nowy czat, co też renderuje listę
+        }
         updateCreativityButtonState();
+        sendVisitInfoToDiscord(); // Wyślij informację o wizycie na stronę
+        renderChatList(); // Upewnij się, że lista czatów jest wyrenderowana przy starcie
     };
 
     // Dodaj nasłuchiwacz zdarzeń kliknięcia do elementu chat dla delegacji przycisków kopiowania
     addCopyButtonListeners(chat);
+
+    // Zapisz aktualne ID czatu przed zamknięciem strony
+    window.addEventListener('beforeunload', () => {
+        if (currentChatId) {
+            localStorage.setItem('jurek36ai_last_chat_id', currentChatId);
+            saveCurrentHistory(); // Zapisz aktualną rozmowę
+        } else if (conversationHistory.length > 0) {
+             // Jeśli była nowa rozmowa bez ID, ale z wiadomościami, zapisz ją
+             saveCurrentHistory();
+             if (currentChatId) { // Sprawdź, czy saveCurrentHistory nadało ID
+                 localStorage.setItem('jurek36ai_last_chat_id', currentChatId);
+             }
+        } else {
+             localStorage.removeItem('jurek36ai_last_chat_id');
+        }
+    });
+
 
   </script>
 </body>
