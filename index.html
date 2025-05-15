@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8956041194199572"
-     crossorigin="anonymous"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jurek36AI ChatBot 2.0</title>
@@ -306,6 +304,7 @@
     .chat-send-button:hover { background-color: var(--accent-hover-color); }
     .chat-send-button:disabled { opacity: 0.6; cursor: not-allowed; }
 
+
     .message-wrapper { /* Dodatkowy wrapper dla wiadomości i jej akcji */
         display: flex;
         flex-direction: column;
@@ -378,6 +377,7 @@
     .edit-save-btn { background-color: var(--success-color); color: white; }
     .edit-cancel-btn { background-color: var(--danger-color); color: white; }
 
+
     .code-container {
         display: flex;
         position: relative;
@@ -425,6 +425,7 @@
     body.light-theme .hljs-comment, body.light-theme .hljs-quote { color: #a0a1a7; font-style: italic; }
     /* ... (więcej stylów dla jasnego motywu highlight.js jeśli potrzebne) ... */
     body:not(.light-theme) .hljs { /* Domyślne (ciemne) style highlight.js są już załadowane */ }
+
 
     .copy-button {
         position: absolute;
@@ -523,6 +524,7 @@
      .sidebar-new-chat-button {} /* Dziedziczy z .sidebar-button */
      .sidebar-export-chat-button {} /* Dziedziczy z .sidebar-button */
 
+
      @media (max-width: 600px) {
          .sidebar { width: 100%; }
          .chat-container { max-width: 95%; height: 88vh; } /* Zwiększona wysokość na mobilnych */
@@ -538,6 +540,9 @@
         .icon-button { font-size: 1rem; }
      }
 
+  </style>
+</head>
+<body>
   <div class="main-container" id="main-container">
     <div class="sidebar" id="sidebar">
         <button class="sidebar-button sidebar-new-chat-button" id="sidebar-new-chat-btn">
@@ -552,17 +557,6 @@
 
     <div class="overlay" id="overlay"></div>
 
-    <div style="text-align: center; margin: 1rem 0;">
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-8956041194199572"
-           data-ad-slot="9461678155"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>
-           (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
-    </div>
     <div class="chat-container-wrapper">
       <div class="chat-container">
         <header class="chat-header">
@@ -632,6 +626,7 @@
     const sidebarExportChatBtn = document.getElementById('sidebar-export-chat-btn'); // NOWY ELEMENT
     const highlightThemeDark = document.getElementById('highlight-theme-dark');
     const highlightThemeLight = document.getElementById('highlight-theme-light');
+
 
     // Zmienne stanu
     let loadingMessageElement = null;
@@ -848,6 +843,7 @@
         }
     }
 
+
     // --- Funkcje pomocnicze i główne (zmodyfikowane i istniejące) ---
     function applyLanguageToUI() {
       const langData = currentTranslations;
@@ -917,6 +913,7 @@
             lineCount--;
         }
 
+
         const codeContainer = document.createElement('div');
         codeContainer.className = 'code-container';
 
@@ -934,12 +931,14 @@
         copyButton.setAttribute('aria-label', langData.copyButtonText);
         copyButton.title = langData.copyButtonText;
 
+
         const clonedPre = preElement.cloneNode(true);
         // Upewnij się, że kod wewnątrz ma odpowiednie tło i kolor dla motywu
         const innerCode = clonedPre.querySelector('code');
         if(innerCode) {
             innerCode.style.backgroundColor = 'transparent'; // Usuń potencjalne tło z highlight.js
         }
+
 
         codeContainer.appendChild(lineNumbersDiv);
         codeContainer.appendChild(clonedPre);
@@ -954,6 +953,7 @@
       const wrapper = document.createElement('div');
       wrapper.className = `message-wrapper ${sender}`; // 'user' lub 'bot'
       wrapper.dataset.messageId = messageTimestampId;
+
 
       const bubble = document.createElement('div');
       bubble.className = `message-bubble ${sender}`;
@@ -979,6 +979,7 @@
       }
       wrapper.appendChild(bubble);
 
+
       // Dodawanie akcji do wiadomości (edycja dla użytkownika, feedback dla bota)
       const actionsWrapper = document.createElement('div');
       actionsWrapper.className = 'message-actions';
@@ -1003,6 +1004,7 @@
         lastUserMessageElement = wrapper; // Zapisz referencję
       }
 
+
       chat.appendChild(wrapper);
 
       if (sender === 'bot') {
@@ -1012,16 +1014,18 @@
         const allUserMessages = chat.querySelectorAll('.message-wrapper.user');
         if (allUserMessages.length > 1) {
             const previousUserMessageWrapper = allUserMessages[allUserMessages.length - 2];
-            const oldEditBtn = previousUserMessageWrapper.querySelector('.message-actions .edit-btn');
+            const oldEditBtn = previousUserMessageWrapper.querySelector('.edit-btn');
             if (oldEditBtn) oldEditBtn.closest('.message-actions')?.remove();
         }
         // Dodaj przycisk edycji do aktualnej (ostatniej) wiadomości użytkownika
         addEditButtonIfApplicable(wrapper, messageTimestampId, text);
       }
 
+
       chat.scrollTop = chat.scrollHeight;
       return { wrapper, id: messageTimestampId };
     }
+
 
     function appendSuggestedQuestions(messageWrapperElement, botResponseText) {
         const langData = currentTranslations;
@@ -1100,6 +1104,7 @@
                     // Zapisuj tylko tekst, pomijaj inline_data obrazów
                     parts: Array.isArray(msg.parts) ? msg.parts.filter(p => p.text).map(p => ({text: p.text})) : [{text: msg.parts || ""}]
                 })).filter(msg => msg.parts && msg.parts.length > 0 && msg.parts.some(p => p.text && p.text.trim() !== ""));
+
 
                 localStorage.setItem(`chat_${currentChatId}`, JSON.stringify(historyToSave));
                 updateChatTitleInList(currentChatId);
@@ -1247,6 +1252,7 @@
           if (editBtnContainer) editBtnContainer.closest('.message-actions').remove();
       }
 
+
       let currentUserTurnParts = [];
       let displayedUserMessage = ""; // Tekst wyświetlony użytkownikowi
 
@@ -1290,6 +1296,7 @@
       };
       conversationHistory.push(userMessageForHistory);
 
+
       messageInput.value = '';
       uiEnable(false); // Wyłącz UI
       appendLoadingIndicator();
@@ -1301,6 +1308,7 @@
             role: msg.role,
             parts: msg.parts.map(part => part.text ? {text: part.text} : part.inline_data ? {inline_data: part.inline_data} : null).filter(p => p) // Przygotuj części dla API
         }));
+
 
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
@@ -1359,6 +1367,7 @@
         sidebarExportChatBtn.disabled = !enable;
         if(enable) messageInput.focus();
     }
+
 
     async function sendVisitInfoToDiscord() {
         // Implementacja bez zmian
