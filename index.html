@@ -537,6 +537,8 @@
      }
 
   </style>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8956041194199572"
+     crossorigin="anonymous"></script>
 </head>
 <body>
   <div class="main-container" id="main-container">
@@ -553,6 +555,17 @@
 
     <div class="overlay" id="overlay"></div>
 
+    <div style="text-align: center; margin: 1rem 0;">
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-8956041194199572"
+           data-ad-slot="9461678155"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+           (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
     <div class="chat-container-wrapper">
       <div class="chat-container">
         <header class="chat-header">
@@ -1002,7 +1015,7 @@
         const allUserMessages = chat.querySelectorAll('.message-wrapper.user');
         if (allUserMessages.length > 1) {
             const previousUserMessageWrapper = allUserMessages[allUserMessages.length - 2];
-            const oldEditBtn = previousUserMessageWrapper.querySelector('.edit-btn');
+            const oldEditBtn = previousUserMessageWrapper.querySelector('.message-actions .edit-btn');
             if (oldEditBtn) oldEditBtn.closest('.message-actions')?.remove();
         }
         // Dodaj przycisk edycji do aktualnej (ostatniej) wiadomości użytkownika
@@ -1434,7 +1447,5 @@
         }
     });
   </script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8956041194199572"
-     crossorigin="anonymous"></script>
 </body>
 </html>
