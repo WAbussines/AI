@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jurek36AI ChatBot 2.0 - Ulepszony</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" id="highlight-theme-dark">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css" id="highlight-theme-light" disabled>
+
+  <style>
+    /* --- Style podstawowe i ciemnego motywu --- */
+    :root {
+      --bg-primary: #1a202c;
+      --bg-secondary: #2d3748;
+      --bg-tertiary: #1f2937; /* Ciemniejszy dla kontenera czatu */
+      --bg-header-footer: #2a3444; /* Dla nagłówka i stopki czatu */
+      --text-primary: #e2e8f0;
+      --text-secondary: #a0aec0;
+      --border-color: #4a5568;
+      --accent-color: #4299e1;
+      --accent-hover-color: #3182ce;
+      --scrollbar-track-bg: rgba(255, 255, 255, 0.1);
+      --scrollbar-thumb-bg: rgba(255, 255, 255, 0.3);
+      --scrollbar-thumb-hover-bg: rgba(255, 255, 255, 0.5);
+      --message-user-bg: rgba(66, 153, 225, 0.9);
+      --message-user-text: white;
+      --message-bot-bg: rgba(74, 85, 104, 0.9);
+      --message-bot-text: #e2e8f0;
+      --input-bg: rgba(74, 85, 104, 0.5);
+      --input-focus-bg: rgba(74, 85, 104, 0.7);
+      --input-focus-ring: #90cdf4;
+      --code-bg: #2d3748;
+      --code-line-numbers-bg: rgba(45, 55, 72, 0.8);
+      --code-line-numbers-text: #a0aec0;
+      --button-secondary-bg: rgba(71, 85, 105, 0.8);
+      --button-secondary-hover-bg: rgba(45, 55, 72, 0.8);
+      --danger-color: #e53e3e;
+      --success-color: #48bb78;
+    }
+
+    body.light-theme {
+      --bg-primary: #f7fafc;
+      --bg-secondary: #edf2f7;
+      --bg-tertiary: #ffffff;
+      --bg-header-footer: #e2e8f0;
+      --text-primary: #2d3748;
+      --text-secondary: #4a5568;
+      --border-color: #cbd5e0;
+      --accent-color: #3182ce;
+      --accent-hover-color: #2b6cb0;
+      --scrollbar-track-bg: rgba(0, 0, 0, 0.05);
+      --scrollbar-thumb-bg: rgba(0, 0, 0, 0.2);
+      --scrollbar-thumb-hover-bg: rgba(0, 0, 0, 0.4);
+      --message-user-bg: #3182ce;
+      --message-user-text: white;
+      --message-bot-bg: #e2e8f0;
+      --message-bot-text: #2d3748;
+      --input-bg: #f7fafc;
+      --input-focus-bg: #ffffff;
+      --input-focus-ring: #63b3ed;
+      --code-bg: #f0f4f8;
+      --code-line-numbers-bg: #e2e8f0;
+      --code-line-numbers-text: #4a5568;
+      --button-secondary-bg: #cbd5e0;
+      --button-secondary-hover-bg: #a0aec0;
+    }
+
+    #chat::-webkit-scrollbar,
+    #chat-history-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    #chat::-webkit-scrollbar-track,
+    #chat-history-list::-webkit-scrollbar-track {
+      background: var(--scrollbar-track-bg);
+      border-radius: 10px;
+    }
+    #chat::-webkit-scrollbar-thumb,
+    #chat-history-list::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb-bg);
+      border-radius: 10px;
+    }
+    #chat::-webkit-scrollbar-thumb:hover,
+    #chat-history-list::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-thumb-hover-bg);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif; /* Lepsza czcionka */
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    /* Usunięto animację tła gradientowego dla uproszczenia i lepszej wydajności z motywami */
+
+    .main-container {
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .sidebar {
+        width: 260px; /* Nieco szerszy pasek boczny */
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out, background-color 0.3s, color 0.3s;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 20;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Delikatniejszy cień */
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 10;
+    }
+    .overlay.visible {
+        display: block;
+    }
+
+    .chat-container-wrapper {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .chat-container {
+        width: 100%;
+        max-width: 450px; /* Nieco szerszy dla lepszej czytelności */
+        background-color: var(--bg-tertiary);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 5px 10px rgba(0,0,0,0.05); /* Ulepszony cień */
+        border-radius: 1rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: 80vh;
+        max-height: 600px;
+        border: 1px solid var(--border-color); /* Dodano subtelną ramkę */
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .chat-header {
+      background: var(--bg-header-footer);
+      color: var(--text-primary);
+      padding: 1rem;
+      font-size: 1.25rem;
+      font-weight: bold;
+      border-top-left-radius: 1rem;
+      border-top-right-radius: 1rem;
+      position: relative;
+      display: flex;
+      justify-content: space-between; /* Rozłożenie elementów */
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+    .chat-header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .chat-header-title-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .chat-header h1 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        transition: color 0.3s;
+    }
+    .header-logo {
+        height: 2.5rem; /* Mniejsze logo */
+        width: auto;
+        border-radius: 0.25rem;
+    }
+    .chat-header-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .icon-button { /* Ogólna klasa dla przycisków z ikonami */
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.2rem; /* Domyślny rozmiar ikon */
+        cursor: pointer;
+        padding: 0.4rem;
+        border-radius: 0.375rem; /* Tailwind's rounded-md */
+        transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    }
+    .icon-button:hover {
+        color: var(--accent-color);
+        background-color: rgba(127,127,127,0.1);
+    }
+
+    .sidebar-toggle-button, .theme-toggle-button, .creativity-toggle-button {
+        /* Dziedziczą z .icon-button, specyficzne style poniżej */
+    }
+    .creativity-toggle-button {
+        background-color: var(--button-secondary-bg);
+        color: var(--text-primary);
+    }
+    .creativity-toggle-button:hover {
+        background-color: var(--button-secondary-hover-bg);
+        color: var(--text-primary);
+    }
+    .creativity-toggle-button.active {
+        background-color: var(--accent-color);
+        color: white;
+    }
+    .creativity-toggle-button.active:hover {
+         background-color: var(--accent-hover-color);
+    }
+
+    #image-input { display: none; }
+    .image-preview {
+        max-width: 100%;
+        max-height: 80px;
+        object-fit: contain;
+        border-radius: 0.5rem;
+        margin-top: 0.3rem;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        border: 1px solid var(--border-color);
+    }
+
+    .chat-main {
+        flex: 1;
+        padding: 0.75rem;
+        overflow-y: auto;
+        background-color: transparent; /* Tło dziedziczone z .chat-container */
+    }
+    .chat-main > div { margin-bottom: 0.75rem; }
+    .chat-main > div:last-child { margin-bottom: 0; }
+
+    .chat-footer {
+        padding: 0.75rem;
+        background-color: var(--bg-header-footer);
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .chat-input {
+        flex: 1;
+        padding: 0.5rem 0.9rem; /* Zwiększony padding dla wygody */
+        border: 1px solid var(--border-color);
+        background-color: var(--input-bg);
+        color: var(--text-primary);
+        border-radius: 0.5rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.3s, color 0.3s;
+        font-size: 0.9rem;
+    }
+    .chat-input::placeholder { color: var(--text-secondary); }
+    .chat-input:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px var(--input-focus-ring);
+        background-color: var(--input-focus-bg);
+    }
+
+    .chat-send-button {
+        padding: 0.5rem 1rem;
+        background-color: var(--accent-color);
+        color: white;
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease-in-out;
+        border: none;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+    .chat-send-button:hover { background-color: var(--accent-hover-color); }
+    .chat-send-button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .message-wrapper { /* Dodatkowy wrapper dla wiadomości i jej akcji */
+        display: flex;
+        flex-direction: column;
+    }
+    .message-wrapper.user { align-items: flex-end; }
+    .message-wrapper.bot { align-items: flex-start; }
+
+    .message-bubble {
+      display: inline-block;
+      padding: 0.5rem 0.9rem;
+      border-radius: 0.75rem; /* Bardziej zaokrąglone */
+      max-width: 85%; /* Nieco szersze */
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      position: relative; /* Dla przycisku edycji */
+    }
+    .message-bubble.user {
+      background-color: var(--message-user-bg);
+      color: var(--message-user-text);
+      border-bottom-right-radius: 0.25rem; /* Charakterystyczne wcięcie */
+    }
+    .message-bubble.bot {
+      background-color: var(--message-bot-bg);
+      color: var(--message-bot-text);
+      border-bottom-left-radius: 0.25rem;
+    }
+    .message-actions { /* Kontener na przyciski edycji, feedbacku */
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+        margin-left: 0.5rem; /* Dla wiadomości bota */
+        margin-right: 0.5rem; /* Dla wiadomości użytkownika */
+        align-items: center;
+    }
+    .message-actions .icon-button {
+        font-size: 0.8rem; /* Mniejsze ikony akcji */
+        padding: 0.2rem;
+        color: var(--text-secondary);
+    }
+    .message-actions .icon-button:hover {
+        color: var(--accent-color);
+    }
+    .message-actions .icon-button.active-feedback {
+        color: var(--accent-color);
+    }
+    .edit-input-wrapper {
+        display: flex;
+        width: 100%;
+        gap: 0.25rem;
+        margin-top: 0.25rem;
+    }
+    .edit-input-wrapper input {
+        flex-grow: 1;
+        padding: 0.4rem 0.8rem;
+        border: 1px solid var(--border-color);
+        background-color: var(--input-bg);
+        color: var(--text-primary);
+        border-radius: 0.375rem;
+        font-size: 0.9rem;
+    }
+    .edit-input-wrapper button {
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.375rem;
+        font-size: 0.8rem;
+        border: none;
+        cursor: pointer;
+    }
+    .edit-save-btn { background-color: var(--success-color); color: white; }
+    .edit-cancel-btn { background-color: var(--danger-color); color: white; }
+
+    .code-container {
+        display: flex;
+        position: relative;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        margin-top: 0.4rem;
+        margin-bottom: 0.4rem;
+        background-color: var(--code-bg);
+        border: 1px solid var(--border-color);
+    }
+    .line-numbers {
+        flex-shrink: 0;
+        width: 2.2rem;
+        padding: 0.6rem 0.4rem;
+        background-color: var(--code-line-numbers-bg);
+        color: var(--code-line-numbers-text);
+        text-align: right;
+        font-family: 'Fira Code', 'Cascadia Code', 'Source Code Pro', monospace;
+        font-size: 0.75rem;
+        line-height: 1.4; /* Dopasowane do kodu */
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        border-right: 1px solid var(--border-color);
+    }
+    .line-numbers span { height: 1.4em; }
+
+    .code-container pre {
+      flex-grow: 1;
+      padding: 0.6rem;
+      margin: 0;
+      overflow-x: auto;
+    }
+    .code-container pre code {
+      font-family: 'Fira Code', 'Cascadia Code', 'Source Code Pro', monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      display: block;
+      background-color: transparent !important; /* Upewnij się, że tło z highlight.js nie nadpisuje */
+      color: var(--text-primary) !important; /* Upewnij się, że kolor tekstu jest odpowiedni */
+    }
+    /* Dostosowanie kolorów dla podświetlania składni w zależności od motywu */
+    body.light-theme .hljs { color: #383a42; background: #fafafa; }
+    body.light-theme .hljs-comment, body.light-theme .hljs-quote { color: #a0a1a7; font-style: italic; }
+    /* ... (więcej stylów dla jasnego motywu highlight.js jeśli potrzebne) ... */
+    body:not(.light-theme) .hljs { /* Domyślne (ciemne) style highlight.js są już załadowane */ }
+
+    .copy-button {
+        position: absolute;
+        top: 0.4rem;
+        right: 0.4rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 0.25rem;
+        padding: 0.2rem 0.4rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        opacity: 0.2; /* Mniej widoczny domyślnie */
+        transition: opacity 0.2s, background-color 0.2s;
+        z-index: 1;
+    }
+    .code-container:hover .copy-button { opacity: 1; }
+    .copy-button:hover { background-color: rgba(255, 255, 255, 0.2); }
+    .copy-button.copied { background-color: var(--success-color); color: white; }
+
+    .suggested-questions {
+        margin-top: 0.75rem;
+        padding-top: 0.4rem;
+        border-top: 1px solid var(--border-color);
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    .suggested-questions p {
+        font-weight: bold;
+        margin-bottom: 0.4rem;
+        color: var(--text-primary);
+    }
+    .suggested-questions button {
+        background-color: var(--button-secondary-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 0.2rem 0.6rem;
+        margin-right: 0.4rem;
+        margin-bottom: 0.4rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .suggested-questions button:hover { background-color: var(--button-secondary-hover-bg); }
+
+    .animate-typing::after {
+      content: '...';
+      animation: typing 1s infinite steps(1);
+    }
+    @keyframes typing {
+      0% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; } 100% { content: '.'; }
+    }
+
+    .chat-history-list {
+        flex-grow: 1;
+        margin-top: 1rem;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+    .chat-history-item {
+        background-color: var(--button-secondary-bg);
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-size: 0.9rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--text-primary);
+    }
+    .chat-history-item:hover { background-color: var(--button-secondary-hover-bg); }
+    .chat-history-item.active {
+        background-color: var(--accent-color);
+        color: white;
+     }
+
+     .sidebar-button { /* Ogólna klasa dla przycisków w sidebarze */
+        background-color: var(--accent-color);
+        border: none;
+        color: white;
+        font-size: 0.9rem; /* Dopasowanie rozmiaru czcionki */
+        cursor: pointer;
+        padding: 0.6rem; /* Dopasowanie paddingu */
+        border-radius: 0.5rem;
+        transition: background-color 0.2s ease-in-out;
+        text-align: center;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+     }
+     .sidebar-button:hover { background-color: var(--accent-hover-color); }
+     .sidebar-new-chat-button {} /* Dziedziczy z .sidebar-button */
+     .sidebar-export-chat-button {} /* Dziedziczy z .sidebar-button */
+
+     @media (max-width: 600px) {
+         .sidebar { width: 100%; }
+         .chat-container { max-width: 95%; height: 88vh; } /* Zwiększona wysokość na mobilnych */
+     }
+     @media (max-width: 480px) { /* Drobne poprawki dla bardzo małych ekranów */
+        .chat-header { padding: 0.75rem; font-size: 1rem; }
+        .chat-header h1 { font-size: 0.9rem; }
+        .header-logo { height: 2rem; }
+        .chat-footer { padding: 0.5rem; gap: 0.3rem; }
+        .chat-input { font-size: 0.85rem; padding: 0.4rem 0.7rem; }
+        .chat-send-button, .attach-button { font-size: 0.85rem; padding: 0.4rem 0.7rem; }
+        .message-bubble { font-size: 0.85rem; padding: 0.4rem 0.7rem; }
+        .icon-button { font-size: 1rem; }
+     }
+
+  </style>
+</head>
+<body>
+  <div class="main-container" id="main-container">
+    <div class="sidebar" id="sidebar">
+        <button class="sidebar-button sidebar-new-chat-button" id="sidebar-new-chat-btn">
+            <i class="fas fa-plus"></i> <span class="sidebar-button-text">Nowy Czat</span>
+        </button>
+        <button class="sidebar-button sidebar-export-chat-button" id="sidebar-export-chat-btn">
+            <i class="fas fa-download"></i> <span class="sidebar-button-text">Eksportuj Czat</span>
+        </button>
+        <div class="chat-history-list" id="chat-history-list">
+            </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="chat-container-wrapper">
+      <div class="chat-container">
+        <header class="chat-header">
+          <div class="chat-header-left">
+            <button class="icon-button sidebar-toggle-button" id="sidebar-toggle-btn" aria-label="Otwórz panel boczny">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="chat-header-title-logo">
+                <img src="https://i.postimg.cc/rFgBD37y/file-00000000eef061f4966205833b4b6822-removebg-preview.png" alt="Logo Jurek36AI Chatbot" class="header-logo">
+                <h1>Jurek36AI</h1>
+            </div>
+          </div>
+          <div class="chat-header-right">
+            <button id="creativity-toggle-btn" class="icon-button creativity-toggle-button" aria-label="Przełącz kreatywność">
+                 <i class="fas fa-brain"></i> </button>
+            <button class="icon-button theme-toggle-button" id="theme-toggle-btn" aria-label="Przełącz motyw">
+                <i class="fas fa-sun"></i> </button>
+          </div>
+        </header>
+
+        <input type="file" id="image-input" accept="image/*">
+         <img id="image-preview" class="image-preview hidden" src="#" alt="Podgląd obrazu">
+
+        <main id="chat" class="chat-main">
+          </main>
+        <footer class="chat-footer">
+          <button id="attach-button" class="icon-button attach-button" aria-label="Załącz plik">
+               <i class="fas fa-paperclip"></i>
+          </button>
+          <input id="message" type="text" placeholder="Napisz wiadomość..."
+                 class="chat-input" />
+          <button id="send" class="chat-send-button">
+            <i class="fas fa-paper-plane"></i> </button>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <script>
+    // !!! === BARDZO WAŻNE OSTRZEŻENIA BEZPIECZEŃSTWA === !!!
+    // PONIŻEJ MUSISZ WPROWADZIĆ SWÓJ KLUCZ API GOOGLE GEMINI.
+    // UMIESZCZANIE KLUCZA API BEZPOŚREDNIO W KODZIE KLIENTA (FRONTENDU)
+    // JEST BARDZO NIEBEZPIECZNE! KAZDY, KTO OTWORZY KONSOLĘ PRZEGLĄDARKĘ,
+    // BĘDZIE MÓGŁ ZOBACZYĆ I UKRAŚĆ TWÓJ KLUCZ.
+    // ZALECAM UŻYCIE TEGO ROZWIĄZANIA TYLKO DO TESTÓW/ROWOJU LOKALNEGO.
+    // DLA APLIKACJI PRODUKCYJNYCH ZAWSZE UŻYWAJ BEZPIECZNEGO BACKENDU,
+    // KTÓRY BĘDZIE PRZECHOWYWAŁ KLUCZ API I POŚREDNICZYŁ W KOMUNIKACJI.
+    const GEMINI_API_KEY = 'AIzaSyChSd5TnsmPwLYZAQclq_al2WC4KVULWNg'; // <--- TUTAJ WPROWADŹ SWÓJ KLUCZ API GOOGLE GEMINI
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1371742303135207444/Z8u_qd8gzRufHFEbEs_5jzVwI7TkKqXk6rsEYBpn6NPqhEMXp9d5cc2XMirHGyEwDIHs';
+
+    // Elementy DOM
+    const chat = document.getElementById('chat');
+    const messageInput = document.getElementById('message');
+    const sendBtn = document.getElementById('send');
+    const imageInput = document.getElementById('image-input');
+    const imagePreview = document.getElementById('image-preview');
+    const attachButton = document.getElementById('attach-button');
+    const creativityToggleBtn = document.getElementById('creativity-toggle-btn');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const overlay = document.getElementById('overlay');
+    const sidebarNewChatBtn = document.getElementById('sidebar-new-chat-btn');
+    const chatHistoryList = document.getElementById('chat-history-list');
+    const themeToggleBtn = document.getElementById('theme-toggle-btn'); // NOWY ELEMENT
+    const sidebarExportChatBtn = document.getElementById('sidebar-export-chat-btn'); // NOWY ELEMENT
+    const highlightThemeDark = document.getElementById('highlight-theme-dark');
+    const highlightThemeLight = document.getElementById('highlight-theme-light');
+
+    // Zmienne stanu
+    let loadingMessageElement = null;
+    let currentLanguage = 'pl'; // Domyślny język (można by rozbudować)
+    let conversationHistory = [];
+    const HISTORY_LIMIT = 20; // Liczba tur (użytkownik + bot)
+    const LOCAL_STORAGE_CURRENT_HISTORY_KEY = 'jurek36ai_current_chat_history'; // Nie jest już intensywnie używany
+    const LOCAL_STORAGE_CHAT_LIST_KEY = 'jurek36ai_chat_list';
+    const LOCAL_STORAGE_THEME_KEY = 'jurek36ai_theme'; // Klucz dla zapisanego motywu
+
+    const DEFAULT_TEMPERATURE = 0.6;
+    const MAX_TEMPERATURE = 1.0;
+    let currentTemperature = DEFAULT_TEMPERATURE;
+    let currentChatId = null;
+    let lastUserMessageElement = null; // Referencja do ostatniej wiadomości użytkownika dla edycji
+
+    // Konfiguracja Marked.js
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      highlight: function(code, lang) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        try {
+          return hljs.highlight(code, { language, ignoreIllegals: true }).value;
+        } catch (e) {
+          console.error("Błąd podświetlania składni:", e);
+          return code;
+        }
+      },
+    });
+
+    // Słownik tłumaczeń (uproszczony, bo nie implementujemy pełnego przełączania języka)
+    const translations = {
+      'pl': {
+        systemMessage: 'Jesteś pomocnym asystentem AI o nazwie Jurek36AI. Mówisz po polsku. Odpowiadaj zwięźle i na temat, używając formatowania Markdown, gdy jest to stosowne (np. **pogrubienie**, *kursywa*, `kod inline`, listy, oraz bloki kodu dla fragmentów kodu).',
+        inputPlaceholder: 'Napisz wiadomość...',
+        sendButtonText: 'Wyślij', // Nie jest już używany, bo jest ikona
+        loadingText: 'Jurek36AI pisze',
+        errorGeneric: 'Wystąpił nieoczekiwany błąd komunikacji.',
+        errorApi: 'Błąd API Gemini.',
+        errorApiRequest: 'Błąd żądania (400). Upewnij się, że Twój klucz API i treść żądania są poprawne.',
+        errorApiAuth: 'Błąd autoryzacji (401). Sprawdź swój klucz API Gemini.',
+        errorApiQuota: 'Przekroczono limit zapytań (429). Spróbuj ponownie później.',
+        errorApiServer: (status) => `Błąd serwera Gemini (HTTP ${status}). Spróbuj ponownie później.`,
+        errorNoReply: 'Nie otrzymano odpowiedzi tekstowej od bota Gemini.',
+        copyButtonText: 'Kopiuj',
+        copiedButtonText: 'Skopiowano!',
+        suggestedQuestionsTitle: 'Możesz zapytać:',
+        creativityNormal: 'Kreatywność: Normalna',
+        creativityMax: 'Kreatywność: Maksymalna',
+        newChatButtonText: 'Nowy Czat',
+        exportChatButtonText: 'Eksportuj Czat',
+        defaultChatTitle: 'Nowa rozmowa',
+        themeToggleLight: 'Przełącz na motyw jasny',
+        themeToggleDark: 'Przełącz na motyw ciemny',
+        editMessageTooltip: 'Edytuj wiadomość',
+        saveChangesTooltip: 'Zapisz zmiany',
+        cancelEditTooltip: 'Anuluj edycję',
+        feedbackGoodTooltip: 'Dobra odpowiedź!',
+        feedbackBadTooltip: 'Słaba odpowiedź',
+        feedbackThanks: 'Dzięki za opinię!',
+        exportChatFileName: 'rozmowa_jurek36ai.txt'
+      }
+      // Można dodać 'en' w przyszłości
+    };
+    const currentTranslations = translations[currentLanguage]; // Używamy tylko 'pl' na razie
+
+    // --- NOWE FUNKCJE I MODYFIKACJE ---
+
+    // 1. Przełącznik Motywu
+    function applyTheme(theme) {
+        if (theme === 'light') {
+            document.body.classList.add('light-theme');
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>'; // Ikona księżyca dla jasnego motywu
+            themeToggleBtn.setAttribute('aria-label', currentTranslations.themeToggleDark);
+            highlightThemeDark.disabled = true;
+            highlightThemeLight.disabled = false;
+        } else {
+            document.body.classList.remove('light-theme');
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>'; // Ikona słońca dla ciemnego motywu
+            themeToggleBtn.setAttribute('aria-label', currentTranslations.themeToggleLight);
+            highlightThemeDark.disabled = false;
+            highlightThemeLight.disabled = true;
+        }
+        localStorage.setItem(LOCAL_STORAGE_THEME_KEY, theme);
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+        applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+    }
+
+    function loadTheme() {
+        const savedTheme = localStorage.getItem(LOCAL_STORAGE_THEME_KEY) || 'dark'; // Domyślnie ciemny
+        applyTheme(savedTheme);
+    }
+
+    // 2. Eksport Czatu
+    function exportChat() {
+        if (conversationHistory.length === 0) {
+            alert("Historia czatu jest pusta.");
+            return;
+        }
+        let chatContent = `Rozmowa z Jurek36AI (${new Date().toLocaleString()})\n\n`;
+        conversationHistory.forEach(msg => {
+            const prefix = msg.role === 'user' ? "Ty:" : "Jurek36AI:";
+            // Bierzemy pod uwagę, że 'parts' może zawierać obiekty z 'text' lub być stringiem (starsza wersja)
+            const text = Array.isArray(msg.parts) ? msg.parts.map(p => p.text || '').join(' ') : (msg.parts || '');
+            chatContent += `${prefix}\n${text}\n\n`;
+        });
+
+        const blob = new Blob([chatContent], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = currentTranslations.exportChatFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+
+    // 3. System Oceny Odpowiedzi Bota (prosty)
+    function handleFeedback(messageId, feedbackType, buttonElement) {
+        console.log(`Feedback dla wiadomości ${messageId}: ${feedbackType}`);
+        // Prosta wizualna informacja zwrotna
+        const parentActions = buttonElement.parentElement;
+        parentActions.querySelectorAll('.feedback-btn').forEach(btn => btn.classList.remove('active-feedback'));
+        buttonElement.classList.add('active-feedback');
+
+        // Można wysłać na Discord lub inną analitykę
+        // sendToDiscord(`Feedback: ${feedbackType} dla wiadomości (ID fragmentu): ${messageId.substring(0,8)}`);
+        // alert(currentTranslations.feedbackThanks); // Można dodać powiadomienie
+    }
+
+    // 4. Edycja Ostatniej Wiadomości Użytkownika
+    function toggleEditMode(messageBubble, messageId, originalText) {
+        const messageWrapper = messageBubble.closest('.message-wrapper');
+        const existingActions = messageWrapper.querySelector('.message-actions');
+        if (existingActions) existingActions.remove(); // Usuń stare akcje (np. przycisk edycji)
+
+        messageBubble.style.display = 'none'; // Ukryj dymek
+
+        const editWrapper = document.createElement('div');
+        editWrapper.className = 'edit-input-wrapper';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = originalText;
+        input.className = 'chat-input'; // Użyj stylów inputu czatu
+
+        const saveBtn = document.createElement('button');
+        saveBtn.innerHTML = '<i class="fas fa-check"></i>';
+        saveBtn.title = currentTranslations.saveChangesTooltip;
+        saveBtn.className = 'edit-save-btn';
+        saveBtn.onclick = () => saveEdit(messageId, input.value, messageBubble, editWrapper);
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.innerHTML = '<i class="fas fa-times"></i>';
+        cancelBtn.title = currentTranslations.cancelEditTooltip;
+        cancelBtn.className = 'edit-cancel-btn';
+        cancelBtn.onclick = () => cancelEdit(messageBubble, editWrapper, messageId, originalText);
+
+        editWrapper.appendChild(input);
+        editWrapper.appendChild(saveBtn);
+        editWrapper.appendChild(cancelBtn);
+        messageWrapper.appendChild(editWrapper);
+        input.focus();
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                saveEdit(messageId, input.value, messageBubble, editWrapper);
+            } else if (e.key === 'Escape') {
+                cancelEdit(messageBubble, editWrapper, messageId, originalText);
+            }
+        });
+    }
+
+    function saveEdit(messageId, newText, messageBubble, editWrapper) {
+        messageBubble.innerHTML = DOMPurify.sanitize(marked.parse(newText)); // Zaktualizuj dymek
+        messageBubble.style.display = 'inline-block';
+        editWrapper.remove();
+
+        // Zaktualizuj historię konwersacji
+        const historyIndex = conversationHistory.findIndex(msg => msg.id === messageId);
+        if (historyIndex > -1) {
+            conversationHistory[historyIndex].parts = [{ text: newText }];
+            saveCurrentHistory(); // Zapisz zmiany
+        }
+        // Dodaj z powrotem przycisk edycji (jeśli to nadal ostatnia wiadomość użytkownika)
+        addEditButtonIfApplicable(messageBubble.closest('.message-wrapper'), messageId, newText);
+    }
+
+    function cancelEdit(messageBubble, editWrapper, messageId, originalText) {
+        messageBubble.style.display = 'inline-block'; // Pokaż oryginalny dymek
+        editWrapper.remove();
+        // Dodaj z powrotem przycisk edycji
+        addEditButtonIfApplicable(messageBubble.closest('.message-wrapper'), messageId, originalText);
+    }
+
+    function addEditButtonIfApplicable(messageWrapper, messageId, messageText) {
+        // Sprawdź, czy to ostatnia wiadomość i jest od użytkownika
+        const lastMessageInHistory = conversationHistory[conversationHistory.length -1];
+        if (lastMessageInHistory && lastMessageInHistory.id === messageId && lastMessageInHistory.role === 'user') {
+            const actionsWrapper = document.createElement('div');
+            actionsWrapper.className = 'message-actions';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'icon-button edit-btn';
+            editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+            editBtn.title = currentTranslations.editMessageTooltip;
+            editBtn.onclick = () => toggleEditMode(messageWrapper.querySelector('.message-bubble'), messageId, messageText);
+
+            actionsWrapper.appendChild(editBtn);
+            messageWrapper.appendChild(actionsWrapper);
+        }
+    }
+
+    // --- Funkcje pomocnicze i główne (zmodyfikowane i istniejące) ---
+    function applyLanguageToUI() {
+      const langData = currentTranslations;
+      messageInput.placeholder = langData.inputPlaceholder;
+      // sendBtn.innerText = langData.sendButtonText; // Już niepotrzebne
+      sidebarNewChatBtn.querySelector('.sidebar-button-text').innerText = langData.newChatButtonText;
+      sidebarExportChatBtn.querySelector('.sidebar-button-text').innerText = langData.exportChatButtonText;
+      updateCreativityButtonState();
+      // renderChatList(); // Odśwież listę czatów po zmianie języka (jeśli będzie dynamiczne)
+    }
+
+    function updateCreativityButtonState() {
+        const langData = currentTranslations;
+        creativityToggleBtn.classList.toggle('active', currentTemperature === MAX_TEMPERATURE);
+        creativityToggleBtn.title = currentTemperature === DEFAULT_TEMPERATURE ? langData.creativityNormal : langData.creativityMax;
+    }
+
+    function addCopyButtonListeners(containerElement) {
+        const langData = currentTranslations;
+        containerElement.addEventListener('click', async (event) => {
+            const target = event.target.closest('.copy-button');
+            if (target) {
+                const codeContainer = target.closest('.code-container');
+                if (codeContainer) {
+                    const codeElement = codeContainer.querySelector('pre code');
+                    if (codeElement) {
+                        const codeText = codeElement.textContent;
+                        try {
+                            await navigator.clipboard.writeText(codeText);
+                            target.innerHTML = `<i class="fas fa-check"></i> ${langData.copiedButtonText.split(' ')[0]}`; // Tylko "Skopiowano!"
+                            target.classList.add('copied');
+                            setTimeout(() => {
+                                target.innerHTML = '<i class="fas fa-copy"></i>';
+                                target.classList.remove('copied');
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Nie udało się skopiować kodu: ', err);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function vibrateDevice(pattern) {
+        if (navigator.vibrate) {
+            navigator.vibrate(pattern);
+        }
+    }
+
+    async function detectAndSetLanguage() {
+      // Uproszczone, pozostajemy przy polskim
+      currentLanguage = 'pl';
+      applyLanguageToUI();
+    }
+
+    function enhanceCodeBlock(preElement) {
+        const langData = currentTranslations;
+        const codeElement = preElement.querySelector('code');
+        if (!codeElement) return null;
+
+        const codeText = codeElement.textContent || ""; // Upewnij się, że codeText nie jest null
+        const lines = codeText.split('\n');
+        let lineCount = lines.length;
+        // Jeśli ostatnia linia jest pusta i jest więcej niż jedna linia, nie licz jej
+        if (lineCount > 1 && lines[lineCount - 1].trim() === '') {
+            lineCount--;
+        }
+
+        const codeContainer = document.createElement('div');
+        codeContainer.className = 'code-container';
+
+        const lineNumbersDiv = document.createElement('div');
+        lineNumbersDiv.className = 'line-numbers';
+        for (let i = 1; i <= lineCount; i++) {
+            const span = document.createElement('span');
+            span.innerText = i;
+            lineNumbersDiv.appendChild(span);
+        }
+
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-button';
+        copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+        copyButton.setAttribute('aria-label', langData.copyButtonText);
+        copyButton.title = langData.copyButtonText;
+
+        const clonedPre = preElement.cloneNode(true);
+        // Upewnij się, że kod wewnątrz ma odpowiednie tło i kolor dla motywu
+        const innerCode = clonedPre.querySelector('code');
+        if(innerCode) {
+            innerCode.style.backgroundColor = 'transparent'; // Usuń potencjalne tło z highlight.js
+        }
+
+        codeContainer.appendChild(lineNumbersDiv);
+        codeContainer.appendChild(clonedPre);
+        codeContainer.appendChild(copyButton);
+        return codeContainer;
+    }
+
+    function appendMessage(text, sender, isHtml = false, messageId = null) {
+      const langData = currentTranslations;
+      const messageTimestampId = messageId || `msg-${Date.now()}-${Math.random().toString(36).substring(2,7)}`;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = `message-wrapper ${sender}`; // 'user' lub 'bot'
+      wrapper.dataset.messageId = messageTimestampId;
+
+      const bubble = document.createElement('div');
+      bubble.className = `message-bubble ${sender}`;
+
+      if (sender === 'bot') {
+        let htmlContent = marked.parse(text);
+        htmlContent = DOMPurify.sanitize(htmlContent, { USE_PROFILES: { html: true } });
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        Array.from(tempDiv.querySelectorAll('pre')).forEach(pre => {
+            const enhanced = enhanceCodeBlock(pre);
+            if (enhanced && pre.parentNode) pre.parentNode.replaceChild(enhanced, pre);
+        });
+        bubble.innerHTML = tempDiv.innerHTML;
+        addCopyButtonListeners(bubble); // Nasłuchiwacze kopiowania dla bloków kodu w tej wiadomości
+      } else { // Wiadomość użytkownika
+        if (isHtml) {
+             bubble.innerHTML = text; // Dla podglądu obrazu
+        } else {
+             // Użyj marked.parse także dla wiadomości użytkownika, aby np. wyświetlić `kod inline`
+             bubble.innerHTML = DOMPurify.sanitize(marked.parse(text));
+        }
+      }
+      wrapper.appendChild(bubble);
+
+      // Dodawanie akcji do wiadomości (edycja dla użytkownika, feedback dla bota)
+      const actionsWrapper = document.createElement('div');
+      actionsWrapper.className = 'message-actions';
+
+      if (sender === 'bot') {
+        const thumbUpBtn = document.createElement('button');
+        thumbUpBtn.className = 'icon-button feedback-btn';
+        thumbUpBtn.innerHTML = '<i class="fas fa-thumbs-up"></i>';
+        thumbUpBtn.title = langData.feedbackGoodTooltip;
+        thumbUpBtn.onclick = () => handleFeedback(messageTimestampId, 'good', thumbUpBtn);
+
+        const thumbDownBtn = document.createElement('button');
+        thumbDownBtn.className = 'icon-button feedback-btn';
+        thumbDownBtn.innerHTML = '<i class="fas fa-thumbs-down"></i>';
+        thumbDownBtn.title = langData.feedbackBadTooltip;
+        thumbDownBtn.onclick = () => handleFeedback(messageTimestampId, 'bad', thumbDownBtn);
+
+        actionsWrapper.appendChild(thumbUpBtn);
+        actionsWrapper.appendChild(thumbDownBtn);
+        wrapper.appendChild(actionsWrapper); // Akcje pod dymkiem bota
+      } else { // Dla użytkownika (przycisk edycji będzie dodany później jeśli to ostatnia wiadomość)
+        lastUserMessageElement = wrapper; // Zapisz referencję
+      }
+
+      chat.appendChild(wrapper);
+
+      if (sender === 'bot') {
+          appendSuggestedQuestions(wrapper, text);
+      } else {
+        // Usuń przycisk edycji z poprzedniej wiadomości użytkownika, jeśli była
+        const allUserMessages = chat.querySelectorAll('.message-wrapper.user');
+        if (allUserMessages.length > 1) {
+            const previousUserMessageWrapper = allUserMessages[allUserMessages.length - 2];
+            const oldEditBtn = previousUserMessageWrapper.querySelector('.edit-btn');
+            if (oldEditBtn) oldEditBtn.closest('.message-actions')?.remove();
+        }
+        // Dodaj przycisk edycji do aktualnej (ostatniej) wiadomości użytkownika
+        addEditButtonIfApplicable(wrapper, messageTimestampId, text);
+      }
+
+      chat.scrollTop = chat.scrollHeight;
+      return { wrapper, id: messageTimestampId };
+    }
+
+    function appendSuggestedQuestions(messageWrapperElement, botResponseText) {
+        const langData = currentTranslations;
+        const suggestionsDiv = document.createElement('div');
+        suggestionsDiv.className = 'suggested-questions';
+        const title = document.createElement('p');
+        title.innerText = langData.suggestedQuestionsTitle;
+        suggestionsDiv.appendChild(title);
+        const suggestions = generateSimpleSuggestions(botResponseText);
+        if (suggestions.length > 0) {
+            suggestions.forEach(suggestion => {
+                const button = document.createElement('button');
+                button.innerText = suggestion;
+                button.addEventListener('click', () => {
+                    messageInput.value = suggestion;
+                    sendMessage(suggestion);
+                });
+                suggestionsDiv.appendChild(button);
+            });
+            messageWrapperElement.appendChild(suggestionsDiv);
+        }
+    }
+
+    function generateSimpleSuggestions(botResponseText) {
+        const suggestions = [];
+        const lowerResponse = botResponseText.toLowerCase();
+        if (lowerResponse.includes('javascript') || lowerResponse.includes('js')) {
+            suggestions.push('Podaj przykład kodu JavaScript.');
+        }
+        if (lowerResponse.includes('python')) {
+             suggestions.push('Pokaż prosty skrypt Python.');
+        }
+        if (suggestions.length === 0 && lowerResponse.length > 30) {
+             suggestions.push('Wyjaśnij to prościej.');
+             suggestions.push('Podaj więcej szczegółów.');
+        }
+        return suggestions.slice(0, 2); // Max 2 sugestie
+    }
+
+    function appendLoadingIndicator() {
+      const langData = currentTranslations;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'message-wrapper bot'; // Stylizuj jak wiadomość bota
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble bot animate-pulse animate-typing';
+      bubble.innerText = langData.loadingText;
+      wrapper.appendChild(bubble);
+      chat.appendChild(wrapper);
+      chat.scrollTop = chat.scrollHeight;
+      loadingMessageElement = wrapper;
+    }
+
+    function removeLoadingIndicator() {
+      if (loadingMessageElement && loadingMessageElement.parentNode) {
+        loadingMessageElement.parentNode.removeChild(loadingMessageElement);
+        loadingMessageElement = null;
+      }
+    }
+
+    function generateChatId() {
+        return `chat-${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    function saveCurrentHistory() {
+        try {
+            if (!currentChatId && conversationHistory.length > 0) {
+                currentChatId = generateChatId();
+                const firstUserMessage = conversationHistory.find(msg => msg.role === 'user' && msg.parts[0]?.text);
+                const chatTitle = firstUserMessage?.parts[0]?.text?.substring(0, 30) || currentTranslations.defaultChatTitle;
+                addChatToList(currentChatId, chatTitle);
+            }
+            if (currentChatId) {
+                const historyToSave = conversationHistory.map(msg => ({
+                    id: msg.id, // Zapisz ID wiadomości
+                    role: msg.role,
+                    // Zapisuj tylko tekst, pomijaj inline_data obrazów
+                    parts: Array.isArray(msg.parts) ? msg.parts.filter(p => p.text).map(p => ({text: p.text})) : [{text: msg.parts || ""}]
+                })).filter(msg => msg.parts && msg.parts.length > 0 && msg.parts.some(p => p.text && p.text.trim() !== ""));
+
+                localStorage.setItem(`chat_${currentChatId}`, JSON.stringify(historyToSave));
+                updateChatTitleInList(currentChatId);
+            }
+        } catch (e) {
+            console.error("Nie można zapisać historii:", e);
+        }
+    }
+
+    function loadHistory(chatId) {
+        try {
+            const savedHistory = localStorage.getItem(`chat_${chatId}`);
+            if (savedHistory) {
+                conversationHistory = JSON.parse(savedHistory);
+                chat.innerHTML = '';
+                conversationHistory.forEach(msg => {
+                    if (msg.role === 'user') {
+                        if (msg.parts.length > 0 && msg.parts[0].text) {
+                           appendMessage(msg.parts[0].text, 'user', false, msg.id);
+                        }
+                    } else if (msg.role === 'model') {
+                        appendMessage(msg.parts[0].text, 'bot', false, msg.id);
+                    }
+                });
+                chat.scrollTop = chat.scrollHeight;
+                currentChatId = chatId;
+                highlightActiveChat(chatId);
+            } else {
+                 startNewChat();
+            }
+        } catch (e) {
+            console.error("Nie można załadować historii:", e);
+            conversationHistory = [];
+            startNewChat();
+        }
+    }
+
+    function getChatList() {
+        try {
+            const chatList = localStorage.getItem(LOCAL_STORAGE_CHAT_LIST_KEY);
+            return chatList ? JSON.parse(chatList) : [];
+        } catch (e) { return []; }
+    }
+
+    function saveChatList(chatList) {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_CHAT_LIST_KEY, JSON.stringify(chatList));
+        } catch (e) { console.error("Nie można zapisać listy czatów:", e); }
+    }
+
+    function addChatToList(chatId, title) {
+        const chatList = getChatList();
+        if (!chatList.find(chat => chat.id === chatId)) {
+            chatList.unshift({ id: chatId, title: title });
+            saveChatList(chatList);
+            renderChatList();
+        }
+    }
+
+     function updateChatTitleInList(chatId) {
+         const chatList = getChatList();
+         const chatIndex = chatList.findIndex(chat => chat.id === chatId);
+         if (chatIndex !== -1) {
+             const savedHistoryJson = localStorage.getItem(`chat_${chatId}`);
+             if (savedHistoryJson) {
+                 try {
+                     const savedHistory = JSON.parse(savedHistoryJson);
+                     const firstUserMessage = savedHistory.find(msg => msg.role === 'user' && msg.parts[0]?.text);
+                     const newTitle = firstUserMessage?.parts[0]?.text?.substring(0, 30) || currentTranslations.defaultChatTitle;
+                     if (chatList[chatIndex].title !== newTitle) {
+                         chatList[chatIndex].title = newTitle;
+                         saveChatList(chatList);
+                         renderChatList();
+                     }
+                 } catch (e) { console.error("Błąd parsowania historii dla tytułu:", e); }
+             }
+         }
+     }
+
+    function renderChatList() {
+        const chatList = getChatList();
+        chatHistoryList.innerHTML = '';
+        chatList.forEach(chatItem => {
+            const chatElement = document.createElement('div');
+            chatElement.className = 'chat-history-item';
+            if (chatItem.id === currentChatId) chatElement.classList.add('active');
+            chatElement.innerText = chatItem.title || currentTranslations.defaultChatTitle;
+            chatElement.dataset.chatId = chatItem.id;
+            chatElement.addEventListener('click', () => {
+                if (conversationHistory.length > 0 && currentChatId) saveCurrentHistory();
+                loadHistory(chatItem.id);
+                if (sidebar.classList.contains('open')) toggleSidebar();
+            });
+            chatHistoryList.appendChild(chatElement);
+        });
+    }
+
+    function highlightActiveChat(chatId) {
+        chatHistoryList.querySelectorAll('.chat-history-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.chatId === chatId);
+        });
+    }
+
+    function startNewChat() {
+        if (conversationHistory.length > 0 && currentChatId) {
+             saveCurrentHistory();
+        } else if (conversationHistory.length > 0 && !currentChatId) {
+             saveCurrentHistory();
+        }
+        conversationHistory = [];
+        chat.innerHTML = '';
+        currentChatId = null;
+        messageInput.value = '';
+        messageInput.focus();
+        imageInput.value = null;
+        imagePreview.classList.add('hidden');
+        imagePreview.src = '#';
+        renderChatList();
+        if (sidebar.classList.contains('open')) toggleSidebar();
+    }
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (typeof reader.result === 'string' && reader.result.includes(',')) {
+                    resolve(reader.result.split(',')[1]);
+                } else {
+                    reject(new Error('Nieprawidłowy format danych pliku.'));
+                }
+            };
+            reader.onerror = (error) => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function sendMessage(messageText) {
+      const langData = currentTranslations;
+      const imageFile = imageInput.files[0];
+      if (!messageText.trim() && !imageFile) return;
+
+      // Usuń przycisk edycji z poprzedniej wiadomości użytkownika, jeśli bot zaczyna odpowiadać
+      if (lastUserMessageElement) {
+          const editBtnContainer = lastUserMessageElement.querySelector('.message-actions .edit-btn');
+          if (editBtnContainer) editBtnContainer.closest('.message-actions').remove();
+      }
+
+      let currentUserTurnParts = [];
+      let displayedUserMessage = ""; // Tekst wyświetlony użytkownikowi
+
+      if (messageText.trim()) {
+        currentUserTurnParts.push({ text: messageText });
+        displayedUserMessage = messageText;
+      }
+
+      let imageHtmlForDisplay = "";
+      if (imageFile) {
+        try {
+          const base64Data = await fileToBase64(imageFile);
+          currentUserTurnParts.push({
+            inline_data: { mime_type: imageFile.type, data: base64Data }
+          });
+          imageHtmlForDisplay = `<img src="data:${imageFile.type};base64,${base64Data}" alt="Wysłany obraz" class="inline-block max-w-[80%] max-h-[100px] rounded-lg my-2">`;
+        } catch (e) {
+          console.error("Błąd przetwarzania obrazu:", e);
+          appendMessage(`Błąd przetwarzania obrazu: ${e.message}`, 'bot');
+          // Odblokuj UI jeśli tylko obraz był wysyłany
+          if (!messageText.trim()) { uiEnable(true); return; }
+          currentUserTurnParts = currentUserTurnParts.filter(part => !part.inline_data); // Usuń część obrazu
+        } finally {
+          imageInput.value = null; // Zawsze resetuj
+          imagePreview.classList.add('hidden');
+          imagePreview.src = '#';
+        }
+      }
+
+      if (currentUserTurnParts.length === 0) { uiEnable(true); return; }
+
+      // Wyświetl wiadomość użytkownika (tekst i/lub obraz)
+      const fullUserDisplayContent = displayedUserMessage + (displayedUserMessage && imageHtmlForDisplay ? "<br>" : "") + imageHtmlForDisplay;
+      const userMsgData = appendMessage(fullUserDisplayContent, 'user', true); // isHtml = true
+
+      // Dodaj wiadomość użytkownika do historii
+      const userMessageForHistory = {
+          id: userMsgData.id, // Użyj ID z appendMessage
+          role: 'user',
+          parts: currentUserTurnParts.map(part => part.text ? {text: part.text} : part) // Kopiuj części, aby uniknąć modyfikacji oryginału
+      };
+      conversationHistory.push(userMessageForHistory);
+
+      messageInput.value = '';
+      uiEnable(false); // Wyłącz UI
+      appendLoadingIndicator();
+      vibrateDevice([50]);
+
+      try {
+        const modelToUse = 'gemini-1.5-flash';
+        const apiContents = conversationHistory.map(msg => ({ // Użyj pełnej historii
+            role: msg.role,
+            parts: msg.parts.map(part => part.text ? {text: part.text} : part.inline_data ? {inline_data: part.inline_data} : null).filter(p => p) // Przygotuj części dla API
+        }));
+
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: apiContents,
+            system_instruction: { parts: [{ text: langData.systemMessage }] },
+            generationConfig: { temperature: currentTemperature }
+          })
+        });
+
+        removeLoadingIndicator();
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          let errMsg = langData.errorApi;
+          if (errorData.error?.message) errMsg += `: ${errorData.error.message}`;
+          else if (res.status === 400) errMsg += `: ${langData.errorApiRequest}`;
+          // ... inne kody błędów
+          throw new Error(errMsg);
+        }
+
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!reply) {
+            appendMessage(langData.errorNoReply, 'bot');
+            conversationHistory.push({ id: `bot-${Date.now()}`, role: 'model', parts: [{ text: langData.errorNoReply }] });
+        } else {
+            const botMsgData = appendMessage(reply, 'bot');
+            conversationHistory.push({ id: botMsgData.id, role: 'model', parts: [{ text: reply }] });
+            vibrateDevice([100]);
+        }
+
+      } catch (err) {
+        removeLoadingIndicator();
+        console.error('Błąd API:', err);
+        const botMsgData = appendMessage(`${langData.errorApi}: ${err.message || langData.errorGeneric}`, 'bot');
+        conversationHistory.push({ id: botMsgData.id, role: 'model', parts: [{ text: `${langData.errorApi}: ${err.message || langData.errorGeneric}` }] });
+      } finally {
+        if (conversationHistory.length > HISTORY_LIMIT * 2) {
+            conversationHistory = conversationHistory.slice(-HISTORY_LIMIT * 2);
+        }
+        saveCurrentHistory();
+        uiEnable(true); // Włącz UI
+      }
+    }
+
+    function uiEnable(enable) {
+        sendBtn.disabled = !enable;
+        messageInput.disabled = !enable;
+        sidebarToggleBtn.disabled = !enable;
+        sidebarNewChatBtn.disabled = !enable;
+        attachButton.disabled = !enable;
+        creativityToggleBtn.disabled = !enable;
+        themeToggleBtn.disabled = !enable;
+        sidebarExportChatBtn.disabled = !enable;
+        if(enable) messageInput.focus();
+    }
+
+    async function sendVisitInfoToDiscord() {
+        // Implementacja bez zmian
+        try {
+            const ipResponse = await fetch('https://api64.ipify.org?format=json');
+            const ipData = await ipResponse.json();
+            const userIp = ipData.ip || 'N/A';
+            const messageContent = `Ktoś wszedł na stronę Jurek36AI ChatBot 2.0. IP: ${userIp}, Czas: ${new Date().toLocaleString()}`;
+            await fetch(DISCORD_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: messageContent, username: "Jurek36AI Notifier" }),
+            });
+        } catch (error) {
+            console.error('Błąd wysyłania info o wizycie:', error);
+        }
+    }
+
+    function toggleSidebar() {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('visible');
+    }
+
+    // --- Inicjalizacja i nasłuchiwacze zdarzeń ---
+    themeToggleBtn.addEventListener('click', toggleTheme);
+    sidebarExportChatBtn.addEventListener('click', exportChat);
+
+    creativityToggleBtn.addEventListener('click', () => {
+        currentTemperature = (currentTemperature === DEFAULT_TEMPERATURE) ? MAX_TEMPERATURE : DEFAULT_TEMPERATURE;
+        updateCreativityButtonState();
+    });
+    sidebarToggleBtn.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+    sidebarNewChatBtn.addEventListener('click', startNewChat);
+
+    imageInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+            }
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.classList.add('hidden');
+            imagePreview.src = '#';
+        }
+    });
+    attachButton.addEventListener('click', () => imageInput.click());
+    sendBtn.addEventListener('click', () => sendMessage(messageInput.value));
+    messageInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage(messageInput.value);
+      }
+    });
+
+    window.onload = async function () {
+        loadTheme(); // Załaduj motyw jako pierwszy
+        await detectAndSetLanguage(); // Ustaw język (obecnie tylko 'pl')
+        const lastChatId = localStorage.getItem('jurek36ai_last_chat_id');
+        if (lastChatId) {
+            loadHistory(lastChatId);
+        } else {
+            startNewChat();
+        }
+        updateCreativityButtonState();
+        sendVisitInfoToDiscord();
+        renderChatList();
+        messageInput.focus();
+    };
+
+    window.addEventListener('beforeunload', () => {
+        if (currentChatId) {
+            localStorage.setItem('jurek36ai_last_chat_id', currentChatId);
+            saveCurrentHistory();
+        } else if (conversationHistory.length > 0) {
+             saveCurrentHistory(); // To nada ID i zapisze
+             if (currentChatId) localStorage.setItem('jurek36ai_last_chat_id', currentChatId);
+        } else {
+             localStorage.removeItem('jurek36ai_last_chat_id');
+        }
+    });
+  </script>
+</body>
+</html>
