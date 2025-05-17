@@ -3,29 +3,15 @@
 <head>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8956041194199572"
      crossorigin="anonymous"></script>
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-format="autorelaxed"
-     data-ad-client="ca-pub-8956041194199572"
-     data-ad-slot="5286990816"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8956041194199572"
-     crossorigin="anonymous"></script>
-<!-- elo2 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8956041194199572"
-     data-ad-slot="5119469855"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8956041194199572"
-     crossorigin="anonymous"></script>
-  <!-- Google tag (gtag.js) --> <script async src="https://www.googletagmanager.com/gtag/js?id=G-SNXHWQ2TVP"></script> <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-SNXHWQ2TVP'); </script>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-SNXHWQ2TVP"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-SNXHWQ2TVP');
+  </script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jurek36AI ChatBot 2.0</title>
@@ -1039,7 +1025,7 @@
         const allUserMessages = chat.querySelectorAll('.message-wrapper.user');
         if (allUserMessages.length > 1) {
             const previousUserMessageWrapper = allUserMessages[allUserMessages.length - 2];
-            const oldEditBtn = previousUserMessageWrapper.querySelector('.edit-btn');
+            const oldEditBtn = previousUserMessageWrapper.querySelector('.message-actions .edit-btn');
             if (oldEditBtn) oldEditBtn.closest('.message-actions')?.remove();
         }
         // Dodaj przycisk edycji do aktualnej (ostatniej) wiadomości użytkownika
@@ -1070,6 +1056,7 @@
                 });
                 suggestionsDiv.appendChild(button);
             });
+            suggestionsDiv.appendChild(button);
             messageWrapperElement.appendChild(suggestionsDiv);
         }
     }
