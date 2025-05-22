@@ -13,7 +13,7 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatBotJ ChatBot 2.0</title>
+  <title>tojest.rel.pl ChatBot 2.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
@@ -575,8 +575,8 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="chat-header-title-logo">
-                <img src="https://i.postimg.cc/rFgBD37y/file-00000000eef061f4966205833b4b6822-removebg-preview.png" alt="Logo ChatBotJ Chatbot" class="header-logo">
-                <h1>ChatBotJ</h1>
+                <img src="https://i.postimg.cc/rFgBD37y/file-00000000eef061f4966205833b4b6822-removebg-preview.png" alt="Logo tojest.rel.pl Chatbot" class="header-logo">
+                <h1>tojest.rel.pl</h1>
             </div>
           </div>
           <div class="chat-header-right">
@@ -643,9 +643,9 @@
     let currentLanguage = 'pl'; // Domyślny język (można by rozbudować)
     let conversationHistory = [];
     const HISTORY_LIMIT = 20; // Liczba tur (użytkownik + bot)
-    const LOCAL_STORAGE_CURRENT_HISTORY_KEY = 'ChatBotJ_current_chat_history'; // Nie jest już intensywnie używany
-    const LOCAL_STORAGE_CHAT_LIST_KEY = 'ChatBotJ_chat_list';
-    const LOCAL_STORAGE_THEME_KEY = 'ChatBotJ_theme'; // Klucz dla zapisanego motywu
+    const LOCAL_STORAGE_CURRENT_HISTORY_KEY = 'tojest.rel.pl_current_chat_history'; // Nie jest już intensywnie używany
+    const LOCAL_STORAGE_CHAT_LIST_KEY = 'tojest.rel.pl_chat_list';
+    const LOCAL_STORAGE_THEME_KEY = 'tojest.rel.pl_theme'; // Klucz dla zapisanego motywu
 
     const DEFAULT_TEMPERATURE = 0.6;
     const MAX_TEMPERATURE = 1.0;
@@ -671,10 +671,10 @@
     // Słownik tłumaczeń (uproszczony, bo nie implementujemy pełnego przełączania języka)
     const translations = {
       'pl': {
-        systemMessage: 'Jesteś pomocnym asystentem AI o nazwie ChatBotJ. Mówisz po polsku. Odpowiadaj zwięźle i na temat, używając formatowania Markdown, gdy jest to stosowne (np. **pogrubienie**, *kursywa*, `kod inline`, listy, oraz bloki kodu dla fragmentów kodu).',
+        systemMessage: 'Jesteś pomocnym asystentem AI o nazwie tojest.rel.pl. Mówisz po polsku. Odpowiadaj zwięźle i na temat, używając formatowania Markdown, gdy jest to stosowne (np. **pogrubienie**, *kursywa*, `kod inline`, listy, oraz bloki kodu dla fragmentów kodu).',
         inputPlaceholder: 'Napisz wiadomość...',
         sendButtonText: 'Wyślij', // Nie jest już używany, bo jest ikona
-        loadingText: 'ChatBotJ pisze',
+        loadingText: 'tojest.rel.pl pisze',
         errorGeneric: 'Wystąpił nieoczekiwany błąd komunikacji.',
         errorApi: 'Błąd API Gemini.',
         errorApiRequest: 'Błąd żądania (400). Upewnij się, że Twój klucz API i treść żądania są poprawne.',
@@ -698,7 +698,7 @@
         feedbackGoodTooltip: 'Dobra odpowiedź!',
         feedbackBadTooltip: 'Słaba odpowiedź',
         feedbackThanks: 'Dzięki za opinię!',
-        exportChatFileName: 'rozmowa_ChatBotJ.txt'
+        exportChatFileName: 'rozmowa_tojest.rel.pl.txt'
       }
       // Można dodać 'en' w przyszłości
     };
@@ -740,9 +740,9 @@
             alert("Historia czatu jest pusta.");
             return;
         }
-        let chatContent = `Rozmowa z ChatBotJ (${new Date().toLocaleString()})\n\n`;
+        let chatContent = `Rozmowa z tojest.rel.pl (${new Date().toLocaleString()})\n\n`;
         conversationHistory.forEach(msg => {
-            const prefix = msg.role === 'user' ? "Ty:" : "ChatBotJ:";
+            const prefix = msg.role === 'user' ? "Ty:" : "tojest.rel.pl:";
             // Bierzemy pod uwagę, że 'parts' może zawierać obiekty z 'text' lub być stringiem (starsza wersja)
             const text = Array.isArray(msg.parts) ? msg.parts.map(p => p.text || '').join(' ') : (msg.parts || '');
             chatContent += `${prefix}\n${text}\n\n`;
@@ -1386,11 +1386,11 @@
             const ipResponse = await fetch('https://api64.ipify.org?format=json');
             const ipData = await ipResponse.json();
             const userIp = ipData.ip || 'N/A';
-            const messageContent = `Ktoś wszedł na stronę ChatBotJ ChatBot 2.0. IP: ${userIp}, Czas: ${new Date().toLocaleString()}`;
+            const messageContent = `Ktoś wszedł na stronę tojest.rel.pl ChatBot 2.0. IP: ${userIp}, Czas: ${new Date().toLocaleString()}`;
             await fetch(DISCORD_WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: messageContent, username: "ChatBotJ Notifier" }),
+                body: JSON.stringify({ content: messageContent, username: "tojest.rel.pl Notifier" }),
             });
         } catch (error) {
             console.error('Błąd wysyłania info o wizycie:', error);
@@ -1440,7 +1440,7 @@
     window.onload = async function () {
         loadTheme(); // Załaduj motyw jako pierwszy
         await detectAndSetLanguage(); // Ustaw język (obecnie tylko 'pl')
-        const lastChatId = localStorage.getItem('ChatBotJ_last_chat_id');
+        const lastChatId = localStorage.getItem('tojest.rel.pl_last_chat_id');
         if (lastChatId) {
             loadHistory(lastChatId);
         } else {
@@ -1454,13 +1454,13 @@
 
     window.addEventListener('beforeunload', () => {
         if (currentChatId) {
-            localStorage.setItem('ChatBotJ_last_chat_id', currentChatId);
+            localStorage.setItem('tojest.rel.pl_last_chat_id', currentChatId);
             saveCurrentHistory();
         } else if (conversationHistory.length > 0) {
              saveCurrentHistory(); // To nada ID i zapisze
-             if (currentChatId) localStorage.setItem('ChatBotJ_last_chat_id', currentChatId);
+             if (currentChatId) localStorage.setItem('tojest.rel.pl_last_chat_id', currentChatId);
         } else {
-             localStorage.removeItem('ChatBotJ_last_chat_id');
+             localStorage.removeItem('tojest.rel.pl_last_chat_id');
         }
     });
   </script>
